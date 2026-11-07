@@ -2,113 +2,348 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B0D11">
 <title>Neural Net Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
-:root{--bg:#0E1014;--panel:#15181E;--raise:#1D2129;--ink:#ECEEF1;--muted:#8E959F;--line:#252A32;--accent:#FF6B2C;--pos:#27C281;--neg:#F0574E;--warn:#F2C14E;color-scheme:dark}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#F5F6F8;--panel:#FFFFFF;--raise:#EEF0F3;--ink:#0F1217;--muted:#5B6470;--line:#E0E3E8;--accent:#E4561D;--pos:#0E8A57;--neg:#C8352C;--warn:#B07A00;color-scheme:light}}
-:root[data-theme="dark"]{--bg:#0E1014;--panel:#15181E;--raise:#1D2129;--ink:#ECEEF1;--muted:#8E959F;--line:#252A32;--accent:#FF6B2C;color-scheme:dark}
+:root{
+  --bg:#0B0D11;--panel:#13161C;--raise:#1B1F27;--ink:#ECEEF1;--muted:#8A919C;--line:#232831;
+  --accent:#FF6B2C;--pos:#27C281;--neg:#F0574E;--warn:#F2C14E;--court:#C9773A;
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",Impact,sans-serif;color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#F3F4F6;--panel:#FFFFFF;--raise:#EEF0F3;--ink:#0F1217;--muted:#5B6470;--line:#E0E3E8;
+  --accent:#E4561D;--pos:#0E8A57;--neg:#C8352C;--warn:#B07A00;color-scheme:light}}
+:root[data-theme="dark"]{--bg:#0B0D11;--panel:#13161C;--raise:#1B1F27;--ink:#ECEEF1;--muted:#8A919C;--line:#232831;--accent:#FF6B2C;--pos:#27C281;--neg:#F0574E;--warn:#F2C14E;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-variant-numeric:tabular-nums}
-.wrap{max-width:640px;margin:0 auto;padding:16px}
-h1{font-size:22px;margin:0;letter-spacing:-.01em}
-h1 span{color:var(--accent)}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.btn{background:var(--accent);color:#fff;border:0;border-radius:999px;font-weight:800;font-size:14px;padding:10px 16px;cursor:pointer}
-.btn[disabled]{opacity:.6}
-.stamp{color:var(--muted);font-size:12px;margin-top:6px}
-h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:22px 0 8px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center}
-.card b{font-size:16px}
-.card small{display:block;color:var(--muted);font-size:12px}
-.now{text-align:right;font-weight:800;font-size:22px}
-.now small{font-weight:600}
-.win{color:var(--pos)} .loss{color:var(--neg)} .live{color:var(--warn)} .wait{color:var(--muted)}
-.tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:2px 5px;margin-left:6px;vertical-align:2px;border:1px solid currentColor}
-.fine{color:var(--muted);font-size:12px;margin-top:22px;border-top:1px solid var(--line);padding-top:12px}
-.fine b{color:var(--ink)}
-.err{color:var(--neg);font-size:13px;margin-top:10px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--ui);font-variant-numeric:tabular-nums}
+.wrap{max-width:720px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 40px}
 a{color:var(--accent);text-decoration:none}
+button{font:inherit;color:inherit}
+
+/* header */
+.top{position:sticky;top:0;z-index:5;margin:0 -16px;padding:12px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.brand{font:900 20px/1 var(--ui);letter-spacing:-.02em;white-space:nowrap}
+.brand span{color:var(--accent)}
+.livepill{display:inline-flex;align-items:center;gap:6px;font:800 11px/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 9px}
+.livepill.on{color:var(--neg);border-color:color-mix(in srgb,var(--neg) 45%,var(--line))}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.livepill.on .dot{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+.go{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;border:0;border-radius:999px;font-weight:800;font-size:14px;padding:10px 16px;cursor:pointer;min-height:40px}
+.go[disabled]{opacity:.65;cursor:default}
+.go svg{width:16px;height:16px}
+.go.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* hero */
+.hero{margin-top:18px}
+.kicker{font:800 13px/1 var(--cond);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0}
+h1{font:800 34px/1 var(--cond);font-style:italic;text-transform:uppercase;margin:6px 0 0;letter-spacing:-.005em}
+.stamp{color:var(--muted);font-size:12px;margin:8px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.auto{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.auto input{accent-color:var(--accent)}
+.tally{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.tally div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.tally small{display:block;font:800 11px/1.2 var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tally b{display:block;font:800 26px/1.1 var(--cond);font-style:italic;margin-top:2px}
+.tally em{font-style:normal;font-size:12px;color:var(--muted);font-weight:600}
+
+h2{font:800 22px/1 var(--cond);font-style:italic;text-transform:uppercase;margin:28px 0 10px;display:flex;align-items:baseline;gap:10px}
+h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var(--muted)}
+
+/* spot cards */
+.spot{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;overflow:hidden}
+.spot::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--tone,var(--line))}
+.spot.win{--tone:var(--pos)} .spot.loss{--tone:var(--neg)} .spot.live{--tone:var(--warn)} .spot.wait{--tone:var(--line)}
+.who{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center}
+.face{width:52px;height:52px;border-radius:50%;background:var(--raise);overflow:hidden;display:flex;align-items:flex-end;justify-content:center;border:2px solid var(--tone,var(--line))}
+.face img{width:118%;height:auto;display:block}
+.face span{font:800 18px/52px var(--cond);color:var(--muted);width:100%;text-align:center}
+.nm{min-width:0}
+.nm b{display:block;font:800 21px/1.02 var(--cond);text-transform:uppercase;letter-spacing:.01em;overflow-wrap:anywhere}
+.nm small{display:block;color:var(--muted);font-size:12px;font-weight:600;margin-top:3px}
+.bet{display:inline-block;white-space:nowrap;font:800 13px/1 var(--cond);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);border:1.5px solid var(--accent);border-radius:6px;padding:3px 6px;margin-top:6px}
+.bet i{font-style:normal;color:var(--muted);margin-left:4px}
+.big{text-align:right}
+.big b{display:block;font:800 44px/.9 var(--cond);font-style:italic;color:var(--tone,var(--ink))}
+.spot.wait .big b{color:var(--muted)}
+.big small{display:block;font:800 11px/1.3 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.state{display:inline-flex;align-items:center;gap:5px;font:800 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--tone,var(--muted));margin-top:4px}
+
+/* rebound balls */
+.balls{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:14px}
+.ball{width:22px;height:22px;border-radius:50%;flex:none;position:relative;background:var(--raise);border:1.5px dashed color-mix(in srgb,var(--muted) 55%,transparent)}
+.ball.got{border:0;background:radial-gradient(circle at 35% 30%,#ffb27a 0,#f08a3c 38%,#c9612a 70%,#9c4520 100%);box-shadow:inset -2px -3px 4px rgba(0,0,0,.25)}
+.ball.got::before,.ball.got::after{content:"";position:absolute;inset:0;border-radius:50%;border:1.3px solid rgba(40,18,6,.55)}
+.ball.got::before{clip-path:inset(0 46% 0 46%)}
+.ball.got::after{clip-path:inset(46% 0 46% 0)}
+.ball.got.pop{animation:pop .45s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes pop{from{transform:scale(.2);opacity:0}}
+.ball.over.got{box-shadow:0 0 0 2px var(--pos),inset -2px -3px 4px rgba(0,0,0,.25)}
+.ball.bad.got{box-shadow:0 0 0 2px var(--neg),inset -2px -3px 4px rgba(0,0,0,.25)}
+.ln{width:2px;height:30px;background:var(--ink);border-radius:2px;position:relative;margin:0 2px;flex:none}
+.ln span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font:800 10px/1.4 var(--ui);letter-spacing:.06em;color:var(--ink);white-space:nowrap}
+
+/* points track */
+.track{position:relative;height:46px;margin:22px 4px 4px}
+.rail{position:absolute;left:0;right:0;top:18px;height:12px;border-radius:6px;background:var(--raise);overflow:hidden}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--tone,var(--accent)) 55%,transparent),var(--tone,var(--accent)));transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.zone{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--neg) 22%,transparent) 0 6px,transparent 6px 12px)}
+.ticks{position:absolute;left:0;right:0;top:34px;height:12px}
+.ticks i{position:absolute;transform:translateX(-50%);font:600 10px/1 var(--ui);font-style:normal;color:var(--muted)}
+.mk{position:absolute;top:10px;width:2px;height:28px;transform:translateX(-1px);border-radius:2px}
+.mk span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font:800 10px/1.5 var(--ui);letter-spacing:.04em;white-space:nowrap}
+.mk.line{background:var(--ink)} .mk.line span{color:var(--ink)}
+.mk.proj{background:transparent;border-left:2px dotted var(--muted);width:0}
+.mk.pace{top:15px;height:18px;width:12px;transform:translateX(-6px);background:none}
+.mk.pace::after{content:"";position:absolute;left:0;top:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--warn)}
+
+
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.meta span{background:var(--raise);border-radius:8px;padding:4px 8px;font:700 12px/1.2 var(--ui);color:var(--muted)}
+.meta span b{color:var(--ink);font-weight:800}
+
+/* lean cards */
+.lean{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;position:relative;overflow:hidden}
+.lean::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--tone,var(--line))}
+.lean.win{--tone:var(--pos)} .lean.loss{--tone:var(--neg)} .lean.live{--tone:var(--warn)}
+.lhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.lhead b{font:800 24px/1 var(--cond);font-style:italic;text-transform:uppercase}
+.lhead small{display:block;color:var(--muted);font-size:12px;font-weight:600;margin-top:4px}
+.sb{display:grid;grid-template-columns:auto auto auto;gap:4px 10px;align-items:center;justify-content:end;font:800 20px/1 var(--cond)}
+.sb img{width:22px;height:22px}
+.sb .l{opacity:.55}
+.meter{position:relative;height:30px;margin-top:16px}
+.meter .rail{top:10px;height:10px}
+.meter .mid{position:absolute;left:50%;top:4px;bottom:4px;width:2px;background:var(--ink);transform:translateX(-1px);border-radius:2px}
+.meter .bar{position:absolute;top:10px;height:10px;border-radius:5px;background:var(--tone,var(--muted));transition:all .8s cubic-bezier(.2,.8,.2,1)}
+.meter .lbl{display:flex;justify-content:space-between;font:700 10px/1 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);position:absolute;left:0;right:0;top:24px}
+.verdict{font:800 13px/1.2 var(--ui);color:var(--tone,var(--muted));margin-top:16px}
+
+/* picks */
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pick{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;position:relative;overflow:hidden}
+.pick::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--tone,var(--line))}
+.pick.win{--tone:var(--pos)} .pick.loss{--tone:var(--neg)} .pick.live{--tone:var(--warn)}
+.prow{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;padding:3px 0}
+.prow img{width:22px;height:22px}
+.prow b{font:800 18px/1 var(--cond);letter-spacing:.02em}
+.prow em{font:800 20px/1 var(--cond);font-style:normal}
+.prow.mine b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:3px}
+.prow.dim{opacity:.55}
+.pfoot{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font:700 11px/1.3 var(--ui);color:var(--muted)}
+.pfoot b{color:var(--tone,var(--muted))}
+
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:16px;padding:16px;color:var(--muted);font-size:14px}
+.err{background:color-mix(in srgb,var(--neg) 10%,var(--panel));border:1px solid color-mix(in srgb,var(--neg) 40%,var(--line));color:var(--ink);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:12px}
+.fine{color:var(--muted);font-size:12px;margin-top:22px;border-top:1px solid var(--line);padding-top:12px;line-height:1.5}
+.fine b{color:var(--ink)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11px;font-weight:700;margin-top:8px}
+.legend i{display:inline-block;vertical-align:-2px;margin-right:5px}
+@media (max-width:520px){h1{font-size:30px}.picks{grid-template-columns:1fr}.big b{font-size:40px}.ball{width:20px;height:20px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><h1>NEURAL <span>NET</span> live</h1><button class="btn" id="go" type="button">Refresh</button></div>
-  <p class="stamp" id="stamp">Board for Sat Nov 7. Tap Refresh for live numbers from ESPN.</p>
-  <h2>Prop spots</h2><div id="spots"></div>
-  <h2>Leans</h2><div id="leans"></div>
-  <h2>Straight-up picks</h2><div id="picks"></div>
-  <p class="err" id="err" hidden></p>
-  <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
+  <header class="top">
+    <span class="brand">NEURAL <span>NET</span></span>
+    <span class="livepill" id="pill"><span class="dot"></span><span id="pilltxt">Pregame</span></span>
+    <button class="go" id="go" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Refresh</button>
+  </header>
+
+  <section class="hero">
+    <p class="kicker">Live tracker · Sat Nov 7</p>
+    <h1>Where tonight stands</h1>
+    <p class="stamp"><span id="stamp">Loading live numbers from ESPN</span><label class="auto"><input type="checkbox" id="auto">Auto-refresh every minute</label></p>
+    <div class="tally" id="tally"></div>
+  </section>
+
+  <h2>Prop spots <small id="spotsub"></small></h2>
+  <div class="legend"><span><i class="ball got" style="width:12px;height:12px;display:inline-block"></i>rebound</span><span><i style="width:2px;height:12px;background:var(--ink)"></i>the line</span><span><i style="width:0;height:12px;border-left:2px dotted var(--muted)"></i>model projection</span><span><i style="border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--warn);width:0;height:0"></i>projected finish</span></div>
+  <div id="spots" style="margin-top:12px"></div>
+
+  <h2>Leans <small>against the spread</small></h2>
+  <div id="leans"></div>
+
+  <h2>Straight-up picks <small>the dot marks the model's pick</small></h2>
+  <div class="picks" id="picks"></div>
+
+  <div id="err"></div>
+
+  <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. Pace assumes a player keeps his current rate for a full game. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
   <p class="fine"><b>For entertainment and analysis, not betting advice.</b> Must be 21+ where sports betting is legal. If gambling stops being fun, call or text <b>1-800-MY-RESET</b>, the free national helpline run by the National Council on Problem Gambling, any time.</p>
 </div>
 <script>
-const BOARD = {"date": "2026-11-07", "date_label": "Sat Nov 7", "games": [{"key": "DEN@IND", "away": "DEN", "home": "IND", "time": "5:00 PM", "spread_home": 7.5, "lean": null, "pick": "DEN", "p": 74}, {"key": "BKN@ATL", "away": "BKN", "home": "ATL", "time": "7:30 PM", "spread_home": -6.5, "lean": null, "pick": "ATL", "p": 70}, {"key": "NYK@CLE", "away": "NYK", "home": "CLE", "time": "8:00 PM", "spread_home": 4.5, "lean": {"team": "CLE", "line": 4.5, "text": "CLE +4.5"}, "pick": "CLE", "p": 61}, {"key": "WAS@OKC", "away": "WAS", "home": "OKC", "time": "8:00 PM", "spread_home": -11.5, "lean": null, "pick": "OKC", "p": 83}, {"key": "ORL@GSW", "away": "ORL", "home": "GSW", "time": "8:30 PM", "spread_home": -5.5, "lean": {"team": "GSW", "line": -5.5, "text": "GSW -5.5"}, "pick": "GSW", "p": 77}, {"key": "HOU@PHX", "away": "HOU", "home": "PHX", "time": "9:00 PM", "spread_home": 6.5, "lean": null, "pick": "HOU", "p": 68}, {"key": "SAS@POR", "away": "SAS", "home": "POR", "time": "10:00 PM", "spread_home": 5.5, "lean": {"team": "POR", "line": 5.5, "text": "POR +5.5"}, "pick": "POR", "p": 51}], "spots": [{"name": "Oso Ighodaro", "team": "PHX", "opp": "HOU", "home": true, "stat": "reb", "line": 5.5, "side": "Under", "price": -121, "gkey": "HOU@PHX"}, {"name": "Dylan Harper", "team": "SAS", "opp": "POR", "home": false, "stat": "reb", "line": 5.5, "side": "Under", "price": -134, "gkey": "SAS@POR"}, {"name": "Trae Young", "team": "WAS", "opp": "OKC", "home": false, "stat": "reb", "line": 2.5, "side": "Over", "price": -135, "gkey": "WAS@OKC"}, {"name": "Jamal Murray", "team": "DEN", "opp": "IND", "home": false, "stat": "reb", "line": 4.5, "side": "Over", "price": -106, "gkey": "DEN@IND"}]};
+const BOARD = {"date": "2026-11-07", "date_label": "Sat Nov 7", "games": [{"key": "DEN@IND", "away": "DEN", "home": "IND", "time": "5:00 PM", "spread_home": 7.5, "lean": null, "pick": "DEN", "p": 74}, {"key": "BKN@ATL", "away": "BKN", "home": "ATL", "time": "7:30 PM", "spread_home": -6.5, "lean": null, "pick": "ATL", "p": 70}, {"key": "NYK@CLE", "away": "NYK", "home": "CLE", "time": "8:00 PM", "spread_home": 4.5, "lean": {"team": "CLE", "line": 4.5, "text": "CLE +4.5"}, "pick": "CLE", "p": 61}, {"key": "WAS@OKC", "away": "WAS", "home": "OKC", "time": "8:00 PM", "spread_home": -11.5, "lean": null, "pick": "OKC", "p": 83}, {"key": "ORL@GSW", "away": "ORL", "home": "GSW", "time": "8:30 PM", "spread_home": -5.5, "lean": {"team": "GSW", "line": -5.5, "text": "GSW -5.5"}, "pick": "GSW", "p": 77}, {"key": "HOU@PHX", "away": "HOU", "home": "PHX", "time": "9:00 PM", "spread_home": 6.5, "lean": null, "pick": "HOU", "p": 68}, {"key": "SAS@POR", "away": "SAS", "home": "POR", "time": "10:00 PM", "spread_home": 5.5, "lean": {"team": "POR", "line": 5.5, "text": "POR +5.5"}, "pick": "POR", "p": 51}], "spots": [{"name": "Oso Ighodaro", "team": "PHX", "opp": "HOU", "home": true, "stat": "reb", "line": 5.5, "side": "Under", "proj": 4.2, "price": -121, "gkey": "HOU@PHX"}, {"name": "Dylan Harper", "team": "SAS", "opp": "POR", "home": false, "stat": "reb", "line": 5.5, "side": "Under", "proj": 4.1, "price": -134, "gkey": "SAS@POR"}, {"name": "Trae Young", "team": "WAS", "opp": "OKC", "home": false, "stat": "reb", "line": 2.5, "side": "Over", "proj": 3.5, "price": -135, "gkey": "WAS@OKC"}, {"name": "Jamal Murray", "team": "DEN", "opp": "IND", "home": false, "stat": "reb", "line": 4.5, "side": "Over", "proj": 5.3, "price": -106, "gkey": "DEN@IND"}]};
 const ESPN = {GSW:"GS",NYK:"NY",NOP:"NO",SAS:"SA",UTA:"UTAH",WAS:"WSH"};
-const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/\b(jr|sr|ii|iii|iv)\b\.?/g,"").replace(/[^a-z]/g,"");
 const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;",">":"&gt;",'"':"&quot;"}[c]));
-const spotCard = (r, now) => `<div class="card"><div><b>${esc(r.name)} <span class="tag">${r.team}</span></b><small>${r.side} ${r.line} ${r.stat === "pts" ? "points" : "rebounds"} (${r.price > 0 ? "+" : ""}${r.price}) · ${r.home ? "vs" : "at"} ${r.opp}</small></div><div class="now ${now.cls}">${now.big}<small>${now.sub}</small></div></div>`;
-const leanCard = (g, now) => `<div class="card"><div><b>${g.lean.text}</b><small>${g.away} at ${g.home} · Vegas ${g.home} ${g.spread_home > 0 ? "+" : ""}${g.spread_home}</small></div><div class="now ${now.cls}">${now.big}<small>${now.sub}</small></div></div>`;
-const pickCard = (g, now) => `<div class="card"><div><b>${g.pick} to win</b><small>${g.away} at ${g.home} · model ${g.p}%</small></div><div class="now ${now.cls}">${now.big}<small>${now.sub}</small></div></div>`;
-function render(live) {
-  const byGame = {}; (live.games || []).forEach(g => byGame[g.key] = g);
-  const spotNow = r => {
-    const g = byGame[r.gkey]; if (!g) return {cls:"wait", big:"", sub:"no game feed"};
-    if (!g.started) return {cls:"wait", big:"", sub:g.detail};
-    const p = g.players[norm(r.name)];
-    if (!p) return {cls:"wait", big:"", sub:g.final ? "did not play (void)" : "not in box yet"};
-    const v = r.stat === "pts" ? p.pts : p.reb, over = v > r.line, hit = (r.side === "Over") === over;
-    const settled = g.final || (r.side === "Over" && over) || (r.side === "Under" && !over && g.final);
-    return {cls: settled ? (hit ? "win" : "loss") : (hit ? "live" : "loss"), big: String(v), sub: (settled ? (hit ? "win" : "loss") : (hit ? "on pace" : "behind")) + " · " + p.min + " min · " + g.detail};
-  };
-  const marginNow = g0 => {
-    const g = byGame[g0.key]; if (!g || !g.started) return null;
-    return g;
-  };
-  $("#spots").innerHTML = BOARD.spots.length ? BOARD.spots.map(r => spotCard(r, spotNow(r))).join("") : '<div class="card"><small>No spots today.</small></div>';
-  $("#leans").innerHTML = BOARD.games.filter(g => g.lean).map(g0 => {
-    const g = marginNow(g0); if (!g) return leanCard(g0, {cls:"wait", big:"", sub:(byGame[g0.key] || {}).detail || "pending"});
-    const m = g.hs - g.as, cover = (m + g0.spread_home) * (g0.lean.team === g0.home ? 1 : -1);
-    const score = `${g.away} ${g.as}, ${g.home} ${g.hs}`;
-    return leanCard(g0, {cls: g.final ? (cover > 0 ? "win" : cover < 0 ? "loss" : "wait") : (cover > 0 ? "live" : "loss"), big: (cover > 0 ? "+" : "") + cover.toFixed(1), sub: (g.final ? (cover > 0 ? "covered" : cover < 0 ? "lost" : "push") : (cover > 0 ? "covering" : "not covering")) + " · " + score + " · " + g.detail});
-  }).join("") || '<div class="card"><small>No leans today.</small></div>';
-  $("#picks").innerHTML = BOARD.games.map(g0 => {
-    const g = marginNow(g0); if (!g) return pickCard(g0, {cls:"wait", big:"", sub:(byGame[g0.key] || {}).detail || "pending"});
-    const lead = g0.pick === g0.home ? g.hs - g.as : g.as - g.hs, score = `${g.away} ${g.as}, ${g.home} ${g.hs}`;
-    return pickCard(g0, {cls: g.final ? (lead > 0 ? "win" : "loss") : (lead > 0 ? "live" : "loss"), big: (lead > 0 ? "+" : "") + lead, sub: (g.final ? (lead > 0 ? "won" : "lost") : (lead > 0 ? "leading" : "trailing")) + " · " + score + " · " + g.detail});
-  }).join("");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/\b(jr|sr|ii|iii|iv)\b\.?/g,"").replace(/[^a-z]/g,"");
+const sign = v => (v > 0 ? "+" : "") + v;
+const price = p => (p > 0 ? "+" : "") + p;
+const word = s => s === "pts" ? "points" : "rebounds";
+const ab = s => s === "pts" ? "PTS" : "REB";
+let LIVE = {games: {}}, seen = {};
+
+/* minutes of game clock elapsed, for pace */
+function elapsed(g) {
+  if (!g.started) return 0;
+  if (g.final) return Math.max(48, 48 + 5 * (g.period - 4));
+  const [m, s] = String(g.clock || "0").split(":").map(Number);
+  const left = (s === undefined ? 0 : m) + (s === undefined ? m : s) / 60;
+  const len = g.period > 4 ? 5 : 12;
+  return (g.period > 4 ? 48 + 5 * (g.period - 5) : 12 * (g.period - 1)) + (len - left);
 }
+function status(g) {
+  if (!g) return {txt: "No feed", cls: "wait"};
+  if (g.final) return {txt: g.detail, cls: "fin"};
+  if (!g.started) return {txt: g.detail.replace(/^.*- /, ""), cls: "wait"};
+  return {txt: g.detail, cls: "on"};
+}
+
+function spotState(r, g, p) {
+  if (!g || !g.started) return {cls: "wait", label: g ? g.detail.replace(/^.*- /, "") : "No feed", v: null};
+  if (!p) return {cls: g.final ? "wait" : "wait", label: g.final ? "Did not play · void" : "Not in yet", v: null};
+  const v = r.stat === "pts" ? p.pts : p.reb, over = v > r.line, mine = (r.side === "Over") === over;
+  if (g.final) return {cls: mine ? "win" : "loss", label: mine ? "Win" : "Loss", v};
+  if (r.side === "Over" && over) return {cls: "win", label: "Cleared", v};
+  if (r.side === "Under" && over) return {cls: "loss", label: "Lost", v};
+  // projected finish: what he has plus the model's projection for the share of the game still to play
+  const t = Math.min(elapsed(g), 48), pace = r.proj ? v + r.proj * Math.max(0, 1 - t / 48) : null;
+  const ok = pace === null ? null : (r.side === "Over" ? pace > r.line : pace < r.line);
+  return {cls: "live", label: ok === null ? "Live" : ok ? "On track" : "Off track", v, pace};
+}
+
+const g_final = r => !!(LIVE.games[r.gkey] && LIVE.games[r.gkey].final);
+function balls(r, st) {
+  const need = Math.ceil(r.line), v = st.v ?? 0;
+  const n = g_final(r) ? Math.max(need + 1, v) : Math.max(need + 2, v + 1, Math.ceil(r.proj || 0) + 1);
+  let h = "";
+  for (let i = 1; i <= n; i++) {
+    if (i === need) h += `<span class="ln"><span>${r.line}</span></span>`;
+    const got = i <= v, fresh = got && i > (seen[r.key] ?? 0);
+    const cls = got ? ("got" + (i >= need ? (r.side === "Over" ? " over" : " bad") : "") + (fresh ? " pop" : "")) : "";
+    h += `<span class="ball ${cls}" style="${fresh ? `animation-delay:${(i - (seen[r.key] ?? 0)) * 60}ms` : ""}" aria-hidden="true"></span>`;
+  }
+  return `<div class="balls" aria-label="${v} of ${r.line} rebounds">${h}</div>`;
+}
+
+function track(r, st) {
+  const v = st.v ?? 0, top = Math.max(r.line * 1.45, v + 4, (st.pace || 0) + 3, (r.proj || 0) + 4);
+  const max = Math.ceil(top / 5) * 5, pct = x => Math.max(0, Math.min(100, 100 * x / max));
+  let ticks = ""; for (let t = 0; t <= max; t += (max > 40 ? 10 : 5)) ticks += `<i style="left:${pct(t)}%">${t}</i>`;
+  const zone = r.side === "Under" ? `<div class="zone" style="left:${pct(r.line)}%;right:0"></div>` : "";
+  return `<div class="track" aria-label="${v} points, line ${r.line}">
+    <div class="rail">${zone}<div class="fill" style="width:${pct(v)}%"></div></div>
+    <div class="mk line" style="left:${pct(r.line)}%"><span>LINE ${r.line}</span></div>
+    ${r.proj ? `<div class="mk proj" style="left:${pct(r.proj)}%" title="Model projection ${r.proj}"></div>` : ""}
+    ${st.pace ? `<div class="mk pace" style="left:${pct(st.pace)}%" title="Projected finish ${st.pace.toFixed(1)}"></div>` : ""}
+    <div class="ticks">${ticks}</div></div>`;
+}
+
+function spotCard(r) {
+  const g = LIVE.games[r.gkey], p = g && g.players[norm(r.name)], st = spotState(r, g, p);
+  const face = p && p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}'}))">` : `<span>${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>`;
+  const viz = r.stat === "reb" ? balls(r, st) : track(r, st);
+  const meta = p ? `<div class="meta"><span><b>${p.min}</b> MIN</span><span><b>${p.pts}</b> PTS</span><span><b>${p.reb}</b> REB</span><span><b>${p.ast}</b> AST</span><span>FG <b>${p.fg}</b></span>${r.proj ? `<span>Model <b>${r.proj}</b></span>` : ""}${st.pace ? `<span style="color:var(--warn)">Finish <b style="color:var(--warn)">${st.pace.toFixed(1)}</b></span>` : ""}</div>` : "";
+  return `<article class="spot ${st.cls}">
+    <div class="who"><div class="face">${face}</div>
+      <div class="nm"><b>${esc(r.name)}</b><small>${r.team} ${r.home ? "vs" : "at"} ${r.opp} · ${esc(status(g).txt)}</small><span class="bet">${r.side} ${r.line} ${ab(r.stat)}<i>${price(r.price)}</i></span></div>
+      <div class="big"><b>${st.v ?? "–"}</b><small>${ab(r.stat)}</small><span class="state">${esc(st.label)}</span></div></div>
+    ${viz}${meta}</article>`;
+}
+
+function teamImg(g, side) { const u = g && g[side + "Logo"]; return u ? `<img src="${esc(u)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : "<span></span>"; }
+
+function leanCard(g0) {
+  const g = LIVE.games[g0.key], s = status(g);
+  if (!g || !g.started) return `<article class="lean"><div class="lhead"><div><b>${esc(g0.lean.text)}</b><small>${g0.away} at ${g0.home} · ${esc(s.txt)}</small></div></div>
+    <div class="meter"><div class="rail"></div><div class="mid"></div><div class="lbl"><span>not covering</span><span>covering</span></div></div><p class="verdict">Waiting for tip</p></article>`;
+  const m = g.hs - g.as, cover = (m + g0.spread_home) * (g0.lean.team === g0.home ? 1 : -1);
+  const cls = g.final ? (cover > 0 ? "win" : cover < 0 ? "loss" : "wait") : (cover > 0 ? "live" : "loss");
+  const w = Math.min(50, Math.abs(cover) / 25 * 50), left = cover >= 0 ? 50 : 50 - w;
+  const verdict = g.final ? (cover > 0 ? `Covered by ${cover.toFixed(1)}` : cover < 0 ? `Lost by ${(-cover).toFixed(1)}` : "Push")
+    : (cover > 0 ? `Covering by ${cover.toFixed(1)}` : cover < 0 ? `Behind by ${(-cover).toFixed(1)}` : "Right on the number");
+  return `<article class="lean ${cls}"><div class="lhead"><div><b>${esc(g0.lean.text)}</b><small>Vegas ${g0.home} ${sign(g0.spread_home)} · ${esc(s.txt)}</small></div>
+    <div class="sb">${teamImg(g, "away")}<span class="${g.as < g.hs ? "l" : ""}">${g0.away}</span><span class="${g.as < g.hs ? "l" : ""}">${g.as}</span>${teamImg(g, "home")}<span class="${g.hs < g.as ? "l" : ""}">${g0.home}</span><span class="${g.hs < g.as ? "l" : ""}">${g.hs}</span></div></div>
+    <div class="meter"><div class="rail"></div><div class="bar" style="left:${left}%;width:${w}%"></div><div class="mid"></div><div class="lbl"><span>not covering</span><span>covering</span></div></div>
+    <p class="verdict">${verdict}</p></article>`;
+}
+
+function pickCard(g0) {
+  const g = LIVE.games[g0.key], s = status(g);
+  const as = g && g.started ? g.as : "", hs = g && g.started ? g.hs : "";
+  const lead = g && g.started ? (g0.pick === g0.home ? g.hs - g.as : g.as - g.hs) : null;
+  const cls = lead === null ? "wait" : g.final ? (lead > 0 ? "win" : "loss") : (lead > 0 ? "live" : "loss");
+  const out = lead === null ? `${g0.p}% to win` : g.final ? (lead > 0 ? "Won" : "Lost") : (lead > 0 ? `Up ${lead}` : lead < 0 ? `Down ${-lead}` : "Tied");
+  const row = (t, sc, side) => `<div class="prow ${g0.pick === t ? "mine" : ""} ${g && g.started && sc < (side === "away" ? hs : as) ? "dim" : ""}">${teamImg(g, side)}<b>${t}</b><em>${sc}</em></div>`;
+  return `<article class="pick ${cls}">${row(g0.away, as, "away")}${row(g0.home, hs, "home")}<div class="pfoot"><span>${esc(s.txt)}</span><b>${out}</b></div></article>`;
+}
+
+function render() {
+  $("#spots").innerHTML = BOARD.spots.length ? BOARD.spots.map(spotCard).join("") : '<div class="empty">No prop spots on today\'s board.</div>';
+  $("#leans").innerHTML = BOARD.games.some(g => g.lean) ? BOARD.games.filter(g => g.lean).map(leanCard).join("") : '<div class="empty">No leans on today\'s board.</div>';
+  $("#picks").innerHTML = BOARD.games.map(pickCard).join("");
+  const tally = (items, f) => { const s = items.map(f); return {w: s.filter(x => x === "win").length, l: s.filter(x => x === "loss").length, p: s.filter(x => x !== "win" && x !== "loss").length}; };
+  const fin = (cls, g) => g && g.final ? cls : (cls === "win" && g && g.started ? "win" : "pend");
+  const sp = tally(BOARD.spots, r => { const g = LIVE.games[r.gkey]; const c = spotState(r, g, g && g.players[norm(r.name)]).cls; return c === "win" ? "win" : (c === "loss" && g && (g.final || r.side === "Under")) ? "loss" : "pend"; });
+  const ln = tally(BOARD.games.filter(g => g.lean), g0 => { const g = LIVE.games[g0.key]; if (!g || !g.final) return "pend"; const c = ((g.hs - g.as) + g0.spread_home) * (g0.lean.team === g0.home ? 1 : -1); return c > 0 ? "win" : c < 0 ? "loss" : "pend"; });
+  const pk = tally(BOARD.games, g0 => { const g = LIVE.games[g0.key]; if (!g || !g.final) return "pend"; return (g0.pick === g0.home ? g.hs > g.as : g.as > g.hs) ? "win" : "loss"; });
+  const box = (n, t) => `<div><small>${n}</small><b>${t.w}-${t.l}</b><em>${t.p ? t.p + " to go" : "all settled"}</em></div>`;
+  $("#tally").innerHTML = box("Spots", sp) + box("Leans", ln) + box("Picks", pk);
+  const live = Object.values(LIVE.games).filter(g => g.started && !g.final).length, done = Object.values(LIVE.games).filter(g => g.final).length;
+  $("#pill").classList.toggle("on", live > 0);
+  $("#pilltxt").textContent = live ? `${live} live` : done && done === BOARD.games.length ? "Final" : "Pregame";
+  $("#spotsub").textContent = BOARD.spots.length ? `${BOARD.spots.length} logged before tip` : "";
+  BOARD.spots.forEach(r => { const g = LIVE.games[r.gkey], p = g && g.players[norm(r.name)]; if (p) seen[r.key] = r.stat === "reb" ? p.reb : p.pts; });
+}
+
 async function refresh() {
-  const b = $("#go"); b.disabled = true; b.textContent = "Loading"; $("#err").hidden = true;
+  const b = $("#go"); b.disabled = true; b.classList.add("spin"); $("#err").innerHTML = "";
   try {
-    const sb = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${BOARD.date.replace(/-/g,"")}`)).json();
-    const games = [];
-    for (const e of sb.events || []) {
+    const sb = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${BOARD.date.replace(/-/g, "")}`, {cache: "no-store"})).json();
+    const games = {};
+    await Promise.all((sb.events || []).map(async e => {
       const c = e.competitions[0], t = Object.fromEntries(c.competitors.map(x => [x.homeAway, x]));
       const code = x => Object.keys(ESPN).find(k => ESPN[k] === x.team.abbreviation) || x.team.abbreviation;
       const away = code(t.away), home = code(t.home), key = away + "@" + home;
-      if (!BOARD.games.some(g => g.key === key)) continue;
-      const st = e.status.type, g = {key, away, home, as: +t.away.score || 0, hs: +t.home.score || 0, started: st.state !== "pre", final: st.completed, detail: st.shortDetail, players: {}};
+      if (!BOARD.games.some(g => g.key === key)) return;
+      const st = e.status.type;
+      const g = {key, as: +t.away.score || 0, hs: +t.home.score || 0, started: st.state !== "pre", final: !!st.completed, detail: st.shortDetail,
+                 period: e.status.period || 0, clock: e.status.displayClock, awayLogo: t.away.team.logo, homeLogo: t.home.team.logo, players: {}};
       if (g.started && BOARD.spots.some(r => r.gkey === key)) {
-        const sum = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${e.id}`)).json();
+        const sum = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${e.id}`, {cache: "no-store"})).json();
         for (const tm of (sum.boxscore || {}).players || []) {
-          const s0 = tm.statistics[0], iP = s0.labels.indexOf("PTS"), iR = s0.labels.indexOf("REB"), iM = s0.labels.indexOf("MIN");
-          for (const a of s0.athletes) if (!a.didNotPlay && a.stats.length) g.players[norm(a.athlete.displayName)] = {pts: +a.stats[iP], reb: +a.stats[iR], min: a.stats[iM]};
+          const s0 = tm.statistics[0], at = l => s0.labels.indexOf(l);
+          for (const a of s0.athletes) if (!a.didNotPlay && a.stats.length) {
+            const v = l => a.stats[at(l)];
+            g.players[norm(a.athlete.displayName)] = {pts: +v("PTS") || 0, reb: +v("REB") || 0, ast: +v("AST") || 0, min: v("MIN"), fg: v("FG"), img: (a.athlete.headshot || {}).href};
+          }
         }
       }
-      games.push(g);
-    }
-    render({games});
-    $("#stamp").textContent = `Board for ${BOARD.date_label}. Live from ESPN at ${new Date().toLocaleTimeString("en-US", {hour: "numeric", minute: "2-digit"})}. Unofficial.`;
+      games[key] = g;
+    }));
+    LIVE = {games};
+    render();
+    $("#stamp").textContent = `Updated ${new Date().toLocaleTimeString("en-US", {hour: "numeric", minute: "2-digit"})} from ESPN. Unofficial.`;
   } catch (err) {
-    $("#err").textContent = "Could not reach ESPN just now. Try again in a minute."; $("#err").hidden = false;
+    $("#err").innerHTML = '<div class="err">Could not reach ESPN just now. Tap Refresh to try again.</div>';
   }
-  b.disabled = false; b.textContent = "Refresh";
+  b.disabled = false; b.classList.remove("spin");
 }
-render({games: []});
+
+let timer = null;
+$("#auto").addEventListener("change", e => { clearInterval(timer); timer = e.target.checked ? setInterval(() => { if (!document.hidden) refresh(); }, 60000) : null; });
 $("#go").addEventListener("click", refresh);
+BOARD.spots.forEach((r, i) => r.key = i);
+render();
 refresh();
 </script>
 </body>
