@@ -91,7 +91,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
 .ln span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font:800 10px/1.4 var(--ui);letter-spacing:.06em;color:var(--ink);white-space:nowrap}
 
 /* points track */
-.track{position:relative;height:46px;margin:22px 4px 4px}
+.track{position:relative;height:62px;margin:22px 4px 4px}
 .rail{position:absolute;left:0;right:0;top:18px;height:12px;border-radius:6px;background:var(--raise);overflow:hidden}
 .fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--tone,var(--accent)) 55%,transparent),var(--tone,var(--accent)));transition:width .8s cubic-bezier(.2,.8,.2,1)}
 .zone{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--neg) 22%,transparent) 0 6px,transparent 6px 12px)}
@@ -105,6 +105,23 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
 .mk.pace::after{content:"";position:absolute;left:0;top:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--warn)}
 
 
+.call{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.call div{padding:8px 10px;min-width:0}
+.call div+div{border-left:1px solid var(--line)}
+@media (max-width:520px){.call{grid-template-columns:repeat(2,minmax(0,1fr))}.call div:nth-child(3){border-left:0}.call div:nth-child(n+3){border-top:1px solid var(--line)}}
+.l5{display:flex;align-items:center;gap:5px;margin-top:10px;font:800 10px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.l5 i{font:800 13px/1 var(--cond);font-style:normal;letter-spacing:0;border-radius:6px;padding:4px 7px;background:var(--raise);color:var(--muted)}
+.l5 i.y{background:color-mix(in srgb,var(--pos) 18%,transparent);color:var(--pos)}
+.l5 i.n{background:color-mix(in srgb,var(--neg) 16%,transparent);color:var(--neg)}
+.call small{display:block;font:800 10px/1.3 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.call b{display:block;font:800 20px/1.1 var(--cond);margin-top:2px;white-space:nowrap}
+.call b em{font:700 12px var(--ui);font-style:normal;color:var(--muted);margin-left:4px}
+.call .edge{color:var(--accent)}
+.ball.proj{outline:2px dotted var(--accent);outline-offset:2px}
+.ball.proj::after{content:"MODEL";position:absolute;inset:auto;top:100%;left:50%;transform:translateX(-50%);margin-top:6px;font:800 8px/1 var(--ui);letter-spacing:.06em;color:var(--accent);white-space:nowrap;border:0;border-radius:0;clip-path:none}
+.balls{padding-bottom:14px}
+.mk.proj span{position:absolute;top:100%;bottom:auto;left:50%;transform:translateX(-50%);margin-top:16px;font:800 10px/1 var(--ui);letter-spacing:.04em;color:var(--accent);white-space:nowrap}
+.mk.proj{border-left-color:var(--accent)}
 .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
 .meta span{background:var(--raise);border-radius:8px;padding:4px 8px;font:700 12px/1.2 var(--ui);color:var(--muted)}
 .meta span b{color:var(--ink);font-weight:800}
@@ -166,7 +183,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
   </section>
 
   <h2>Prop spots <small id="spotsub"></small></h2>
-  <div class="legend"><span><i class="ball got" style="width:12px;height:12px;display:inline-block"></i>rebound</span><span><i style="width:2px;height:12px;background:var(--ink)"></i>the line</span><span><i style="width:0;height:12px;border-left:2px dotted var(--muted)"></i>model projection</span><span><i style="border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--warn);width:0;height:0"></i>projected finish</span></div>
+  <div class="legend"><span><i class="ball got" style="width:12px;height:12px;display:inline-block"></i>rebound</span><span><i style="width:2px;height:12px;background:var(--ink)"></i>the line</span><span><i style="width:0;height:12px;border-left:2px dotted var(--accent)"></i>model projection</span><span><i style="border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--warn);width:0;height:0"></i>projected finish</span></div>
   <div id="spots" style="margin-top:12px"></div>
 
   <h2>Leans <small>against the spread</small></h2>
@@ -177,11 +194,11 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
 
   <div id="err"></div>
 
-  <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. Pace assumes a player keeps his current rate for a full game. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
+  <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The model numbers are the ones logged before tip; the percentage is the model pulled halfway toward Vegas, as on the main site. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. Pace assumes a player keeps his current rate for a full game. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
   <p class="fine"><b>For entertainment and analysis, not betting advice.</b> Must be 21+ where sports betting is legal. If gambling stops being fun, call or text <b>1-800-MY-RESET</b>, the free national helpline run by the National Council on Problem Gambling, any time.</p>
 </div>
 <script>
-const BOARD = {"date": "2026-11-07", "date_label": "Sat Nov 7", "games": [{"key": "DEN@IND", "away": "DEN", "home": "IND", "time": "5:00 PM", "spread_home": 7.5, "lean": null, "pick": "DEN", "p": 74}, {"key": "BKN@ATL", "away": "BKN", "home": "ATL", "time": "7:30 PM", "spread_home": -6.5, "lean": null, "pick": "ATL", "p": 70}, {"key": "NYK@CLE", "away": "NYK", "home": "CLE", "time": "8:00 PM", "spread_home": 4.5, "lean": {"team": "CLE", "line": 4.5, "text": "CLE +4.5"}, "pick": "CLE", "p": 61}, {"key": "WAS@OKC", "away": "WAS", "home": "OKC", "time": "8:00 PM", "spread_home": -11.5, "lean": null, "pick": "OKC", "p": 83}, {"key": "ORL@GSW", "away": "ORL", "home": "GSW", "time": "8:30 PM", "spread_home": -5.5, "lean": {"team": "GSW", "line": -5.5, "text": "GSW -5.5"}, "pick": "GSW", "p": 77}, {"key": "HOU@PHX", "away": "HOU", "home": "PHX", "time": "9:00 PM", "spread_home": 6.5, "lean": null, "pick": "HOU", "p": 68}, {"key": "SAS@POR", "away": "SAS", "home": "POR", "time": "10:00 PM", "spread_home": 5.5, "lean": {"team": "POR", "line": 5.5, "text": "POR +5.5"}, "pick": "POR", "p": 51}], "spots": [{"name": "Oso Ighodaro", "team": "PHX", "opp": "HOU", "home": true, "stat": "reb", "line": 5.5, "side": "Under", "proj": 4.2, "price": -121, "gkey": "HOU@PHX"}, {"name": "Dylan Harper", "team": "SAS", "opp": "POR", "home": false, "stat": "reb", "line": 5.5, "side": "Under", "proj": 4.1, "price": -134, "gkey": "SAS@POR"}, {"name": "Trae Young", "team": "WAS", "opp": "OKC", "home": false, "stat": "reb", "line": 2.5, "side": "Over", "proj": 3.5, "price": -135, "gkey": "WAS@OKC"}, {"name": "Jamal Murray", "team": "DEN", "opp": "IND", "home": false, "stat": "reb", "line": 4.5, "side": "Over", "proj": 5.3, "price": -106, "gkey": "DEN@IND"}]};
+const BOARD = {"date": "2026-11-07", "date_label": "Sat Nov 7", "games": [{"key": "DEN@IND", "away": "DEN", "home": "IND", "time": "5:00 PM", "spread_home": 7.5, "lean": null, "pick": "DEN", "p": 74}, {"key": "BKN@ATL", "away": "BKN", "home": "ATL", "time": "7:30 PM", "spread_home": -6.5, "lean": null, "pick": "ATL", "p": 70}, {"key": "NYK@CLE", "away": "NYK", "home": "CLE", "time": "8:00 PM", "spread_home": 4.5, "lean": {"team": "CLE", "line": 4.5, "text": "CLE +4.5"}, "pick": "CLE", "p": 61}, {"key": "WAS@OKC", "away": "WAS", "home": "OKC", "time": "8:00 PM", "spread_home": -11.5, "lean": null, "pick": "OKC", "p": 83}, {"key": "ORL@GSW", "away": "ORL", "home": "GSW", "time": "8:30 PM", "spread_home": -5.5, "lean": {"team": "GSW", "line": -5.5, "text": "GSW -5.5"}, "pick": "GSW", "p": 77}, {"key": "HOU@PHX", "away": "HOU", "home": "PHX", "time": "9:00 PM", "spread_home": 6.5, "lean": null, "pick": "HOU", "p": 68}, {"key": "SAS@POR", "away": "SAS", "home": "POR", "time": "10:00 PM", "spread_home": 5.5, "lean": {"team": "POR", "line": 5.5, "text": "POR +5.5"}, "pick": "POR", "p": 51}], "spots": [{"name": "Oso Ighodaro", "team": "PHX", "opp": "HOU", "home": true, "stat": "reb", "line": 5.5, "side": "Under", "proj": 4.2, "avg": 5.2, "g": 5, "last5": [3, 9, 2, 7, 5], "p_model": 60, "p_vegas": 51, "price": -121, "gkey": "HOU@PHX"}, {"name": "Dylan Harper", "team": "SAS", "opp": "POR", "home": false, "stat": "reb", "line": 5.5, "side": "Under", "proj": 4.1, "avg": 5.2, "g": 9, "last5": [5, 7, 7, 5, 2], "p_model": 62, "p_vegas": 54, "price": -134, "gkey": "SAS@POR"}, {"name": "Trae Young", "team": "WAS", "opp": "OKC", "home": false, "stat": "reb", "line": 2.5, "side": "Over", "proj": 3.5, "avg": 3.2, "g": 9, "last5": [5, 6, 3, 2, 2], "p_model": 60, "p_vegas": 54, "price": -135, "gkey": "WAS@OKC"}, {"name": "Jamal Murray", "team": "DEN", "opp": "IND", "home": false, "stat": "reb", "line": 4.5, "side": "Over", "proj": 5.3, "avg": 5.4, "g": 7, "last5": [6, 1, 8, 5, 5], "p_model": 54, "p_vegas": 48, "price": -106, "gkey": "DEN@IND"}]};
 const ESPN = {GSW:"GS",NYK:"NY",NOP:"NO",SAS:"SA",UTA:"UTAH",WAS:"WSH"};
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -228,8 +245,8 @@ function balls(r, st) {
   let h = "";
   for (let i = 1; i <= n; i++) {
     if (i === need) h += `<span class="ln"><span>${r.line}</span></span>`;
-    const got = i <= v, fresh = got && i > (seen[r.key] ?? 0);
-    const cls = got ? ("got" + (i >= need ? (r.side === "Over" ? " over" : " bad") : "") + (fresh ? " pop" : "")) : "";
+    const got = i <= v, fresh = got && i > (seen[r.key] ?? 0), pj = r.proj && i === Math.round(r.proj) ? " proj" : "";
+    const cls = pj + " " + (got ? ("got" + (i >= need ? (r.side === "Over" ? " over" : " bad") : "") + (fresh ? " pop" : "")) : "");
     h += `<span class="ball ${cls}" style="${fresh ? `animation-delay:${(i - (seen[r.key] ?? 0)) * 60}ms` : ""}" aria-hidden="true"></span>`;
   }
   return `<div class="balls" aria-label="${v} of ${r.line} rebounds">${h}</div>`;
@@ -243,7 +260,7 @@ function track(r, st) {
   return `<div class="track" aria-label="${v} points, line ${r.line}">
     <div class="rail">${zone}<div class="fill" style="width:${pct(v)}%"></div></div>
     <div class="mk line" style="left:${pct(r.line)}%"><span>LINE ${r.line}</span></div>
-    ${r.proj ? `<div class="mk proj" style="left:${pct(r.proj)}%" title="Model projection ${r.proj}"></div>` : ""}
+    ${r.proj ? `<div class="mk proj" style="left:${pct(r.proj)}%" title="Model projection ${r.proj}"><span>MODEL ${r.proj}</span></div>` : ""}
     ${st.pace ? `<div class="mk pace" style="left:${pct(st.pace)}%" title="Projected finish ${st.pace.toFixed(1)}"></div>` : ""}
     <div class="ticks">${ticks}</div></div>`;
 }
@@ -253,11 +270,13 @@ function spotCard(r) {
   const img = (p && p.img) || HEADS[norm(r.name)];
   const face = img ? `<img src="${esc(img)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}'}))">` : `<span>${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>`;
   const viz = r.stat === "reb" ? balls(r, st) : track(r, st);
-  const meta = p ? `<div class="meta"><span><b>${p.min}</b> MIN</span><span><b>${p.pts}</b> PTS</span><span><b>${p.reb}</b> REB</span><span><b>${p.ast}</b> AST</span><span>FG <b>${p.fg}</b></span>${r.proj ? `<span>Model <b>${r.proj}</b></span>` : ""}${st.pace ? `<span style="color:var(--warn)">Finish <b style="color:var(--warn)">${st.pace.toFixed(1)}</b></span>` : ""}</div>` : "";
+  const meta = p ? `<div class="meta"><span><b>${p.min}</b> MIN</span><span><b>${p.pts}</b> PTS</span><span><b>${p.reb}</b> REB</span><span><b>${p.ast}</b> AST</span><span>FG <b>${p.fg}</b></span>${st.pace ? `<span style="color:var(--warn)">Finish <b style="color:var(--warn)">${st.pace.toFixed(1)}</b></span>` : ""}</div>` : "";
   return `<article class="spot ${st.cls}">
     <div class="who"><div class="face">${face}</div>
       <div class="nm"><b>${esc(r.name)}</b><small>${r.team} ${r.home ? "vs" : "at"} ${r.opp} · ${esc(status(g).txt)}</small><span class="bet">${r.side} ${r.line} ${ab(r.stat)}<i>${price(r.price)}</i></span></div>
       <div class="big"><b>${st.v ?? "–"}</b><small>${ab(r.stat)}</small><span class="state">${esc(st.label)}</span></div></div>
+    <div class="call"><div><small>Model projects</small><b>${r.proj}<em>vs ${r.line}</em></b></div><div><small>Season avg</small><b>${r.avg ?? "?"}<em>${r.g ? r.g + " games" : ""}</em></b></div><div><small>Edge</small><b class="edge">${(r.side === "Over" ? r.proj - r.line : r.line - r.proj) > 0 ? "+" : ""}${(r.side === "Over" ? r.proj - r.line : r.line - r.proj).toFixed(1)}<em>${ab(r.stat)}</em></b></div><div><small>Chance ${r.side.toLowerCase()}</small><b>${r.p_model ?? "?"}%<em>Vegas ${r.p_vegas ?? "?"}%</em></b></div></div>
+    ${(r.last5 || []).length ? `<div class="l5">Last ${r.last5.length}${r.last5.map(x => `<i class="${(x > r.line) === (r.side === "Over") ? "y" : "n"}">${x}</i>`).join("")}</div>` : ""}
     ${viz}${meta}</article>`;
 }
 
