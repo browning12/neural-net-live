@@ -190,7 +190,7 @@ const sign = v => (v > 0 ? "+" : "") + v;
 const price = p => (p > 0 ? "+" : "") + p;
 const word = s => s === "pts" ? "points" : "rebounds";
 const ab = s => s === "pts" ? "PTS" : "REB";
-let LIVE = {games: {}}, seen = {};
+let LIVE = {games: {}}, seen = {}, HEADS = {};
 
 /* minutes of game clock elapsed, for pace */
 function elapsed(g) {
@@ -250,7 +250,8 @@ function track(r, st) {
 
 function spotCard(r) {
   const g = LIVE.games[r.gkey], p = g && g.players[norm(r.name)], st = spotState(r, g, p);
-  const face = p && p.img ? `<img src="${esc(p.img)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}'}))">` : `<span>${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>`;
+  const img = (p && p.img) || HEADS[norm(r.name)];
+  const face = img ? `<img src="${esc(img)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}'}))">` : `<span>${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>`;
   const viz = r.stat === "reb" ? balls(r, st) : track(r, st);
   const meta = p ? `<div class="meta"><span><b>${p.min}</b> MIN</span><span><b>${p.pts}</b> PTS</span><span><b>${p.reb}</b> REB</span><span><b>${p.ast}</b> AST</span><span>FG <b>${p.fg}</b></span>${r.proj ? `<span>Model <b>${r.proj}</b></span>` : ""}${st.pace ? `<span style="color:var(--warn)">Finish <b style="color:var(--warn)">${st.pace.toFixed(1)}</b></span>` : ""}</div>` : "";
   return `<article class="spot ${st.cls}">
@@ -305,8 +306,19 @@ function render() {
   BOARD.spots.forEach(r => { const g = LIVE.games[r.gkey], p = g && g.players[norm(r.name)]; if (p) seen[r.key] = r.stat === "reb" ? p.reb : p.pts; });
 }
 
+/* headshots before tip: ESPN team rosters carry the same photos the box score does (fetched once per page load) */
+async function heads() {
+  const teams = [...new Set(BOARD.spots.map(r => (ESPN[r.team] || r.team).toLowerCase()))];
+  await Promise.all(teams.map(async t => {
+    try {
+      const d = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${t}/roster`)).json();
+      for (const a of d.athletes || []) if (a.headshot && a.headshot.href) HEADS[norm(a.displayName)] = a.headshot.href;
+    } catch (e) {}
+  }));
+}
 async function refresh() {
   const b = $("#go"); b.disabled = true; b.classList.add("spin"); $("#err").innerHTML = "";
+  if (!Object.keys(HEADS).length) await heads();
   try {
     const sb = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${BOARD.date.replace(/-/g, "")}`, {cache: "no-store"})).json();
     const games = {};
