@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Neural Net Live</title>
+<style>
+:root{--bg:#0E1014;--panel:#15181E;--raise:#1D2129;--ink:#ECEEF1;--muted:#8E959F;--line:#252A32;--accent:#FF6B2C;--pos:#27C281;--neg:#F0574E;--warn:#F2C14E;color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#F5F6F8;--panel:#FFFFFF;--raise:#EEF0F3;--ink:#0F1217;--muted:#5B6470;--line:#E0E3E8;--accent:#E4561D;--pos:#0E8A57;--neg:#C8352C;--warn:#B07A00;color-scheme:light}}
+:root[data-theme="dark"]{--bg:#0E1014;--panel:#15181E;--raise:#1D2129;--ink:#ECEEF1;--muted:#8E959F;--line:#252A32;--accent:#FF6B2C;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-variant-numeric:tabular-nums}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:999px;font-weight:800;font-size:14px;padding:10px 16px;cursor:pointer}
+.btn[disabled]{opacity:.6}
+.stamp{color:var(--muted);font-size:12px;margin-top:6px}
+h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:22px 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center}
+.card b{font-size:16px}
+.card small{display:block;color:var(--muted);font-size:12px}
+.now{text-align:right;font-weight:800;font-size:22px}
+.now small{font-weight:600}
+.win{color:var(--pos)} .loss{color:var(--neg)} .live{color:var(--warn)} .wait{color:var(--muted)}
+.tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:2px 5px;margin-left:6px;vertical-align:2px;border:1px solid currentColor}
+.fine{color:var(--muted);font-size:12px;margin-top:22px;border-top:1px solid var(--line);padding-top:12px}
+.fine b{color:var(--ink)}
+.err{color:var(--neg);font-size:13px;margin-top:10px}
+a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>NEURAL <span>NET</span> live</h1><button class="btn" id="go" type="button">Refresh</button></div>
+  <p class="stamp" id="stamp">Board for Sat Nov 7. Tap Refresh for live numbers from ESPN.</p>
+  <h2>Prop spots</h2><div id="spots"></div>
+  <h2>Leans</h2><div id="leans"></div>
+  <h2>Straight-up picks</h2><div id="picks"></div>
+  <p class="err" id="err" hidden></p>
+  <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
+  <p class="fine"><b>For entertainment and analysis, not betting advice.</b> Must be 21+ where sports betting is legal. If gambling stops being fun, call or text <b>1-800-MY-RESET</b>, the free national helpline run by the National Council on Problem Gambling, any time.</p>
+</div>
+<script>
+const BOARD = {"date": "2026-11-07", "date_label": "Sat Nov 7", "games": [{"key": "DEN@IND", "away": "DEN", "home": "IND", "time": "5:00 PM", "spread_home": 7.5, "lean": null, "pick": "DEN", "p": 74}, {"key": "BKN@ATL", "away": "BKN", "home": "ATL", "time": "7:30 PM", "spread_home": -6.5, "lean": null, "pick": "ATL", "p": 70}, {"key": "NYK@CLE", "away": "NYK", "home": "CLE", "time": "8:00 PM", "spread_home": 4.5, "lean": {"team": "CLE", "line": 4.5, "text": "CLE +4.5"}, "pick": "CLE", "p": 61}, {"key": "WAS@OKC", "away": "WAS", "home": "OKC", "time": "8:00 PM", "spread_home": -11.5, "lean": null, "pick": "OKC", "p": 83}, {"key": "ORL@GSW", "away": "ORL", "home": "GSW", "time": "8:30 PM", "spread_home": -5.5, "lean": {"team": "GSW", "line": -5.5, "text": "GSW -5.5"}, "pick": "GSW", "p": 77}, {"key": "HOU@PHX", "away": "HOU", "home": "PHX", "time": "9:00 PM", "spread_home": 6.5, "lean": null, "pick": "HOU", "p": 68}, {"key": "SAS@POR", "away": "SAS", "home": "POR", "time": "10:00 PM", "spread_home": 5.5, "lean": {"team": "POR", "line": 5.5, "text": "POR +5.5"}, "pick": "POR", "p": 51}], "spots": [{"name": "Oso Ighodaro", "team": "PHX", "opp": "HOU", "home": true, "stat": "reb", "line": 5.5, "side": "Under", "price": -121, "gkey": "HOU@PHX"}, {"name": "Dylan Harper", "team": "SAS", "opp": "POR", "home": false, "stat": "reb", "line": 5.5, "side": "Under", "price": -134, "gkey": "SAS@POR"}, {"name": "Trae Young", "team": "WAS", "opp": "OKC", "home": false, "stat": "reb", "line": 2.5, "side": "Over", "price": -135, "gkey": "WAS@OKC"}, {"name": "Jamal Murray", "team": "DEN", "opp": "IND", "home": false, "stat": "reb", "line": 4.5, "side": "Over", "price": -106, "gkey": "DEN@IND"}]};
+const ESPN = {GSW:"GS",NYK:"NY",NOP:"NO",SAS:"SA",UTA:"UTAH",WAS:"WSH"};
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/\b(jr|sr|ii|iii|iv)\b\.?/g,"").replace(/[^a-z]/g,"");
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","&gt;":"&gt;",">":"&gt;",'"':"&quot;"}[c]));
+const spotCard = (r, now) => `<div class="card"><div><b>${esc(r.name)} <span class="tag">${r.team}</span></b><small>${r.side} ${r.line} ${r.stat === "pts" ? "points" : "rebounds"} (${r.price > 0 ? "+" : ""}${r.price}) · ${r.home ? "vs" : "at"} ${r.opp}</small></div><div class="now ${now.cls}">${now.big}<small>${now.sub}</small></div></div>`;
+const leanCard = (g, now) => `<div class="card"><div><b>${g.lean.text}</b><small>${g.away} at ${g.home} · Vegas ${g.home} ${g.spread_home > 0 ? "+" : ""}${g.spread_home}</small></div><div class="now ${now.cls}">${now.big}<small>${now.sub}</small></div></div>`;
+const pickCard = (g, now) => `<div class="card"><div><b>${g.pick} to win</b><small>${g.away} at ${g.home} · model ${g.p}%</small></div><div class="now ${now.cls}">${now.big}<small>${now.sub}</small></div></div>`;
+function render(live) {
+  const byGame = {}; (live.games || []).forEach(g => byGame[g.key] = g);
+  const spotNow = r => {
+    const g = byGame[r.gkey]; if (!g) return {cls:"wait", big:"", sub:"no game feed"};
+    if (!g.started) return {cls:"wait", big:"", sub:g.detail};
+    const p = g.players[norm(r.name)];
+    if (!p) return {cls:"wait", big:"", sub:g.final ? "did not play (void)" : "not in box yet"};
+    const v = r.stat === "pts" ? p.pts : p.reb, over = v > r.line, hit = (r.side === "Over") === over;
+    const settled = g.final || (r.side === "Over" && over) || (r.side === "Under" && !over && g.final);
+    return {cls: settled ? (hit ? "win" : "loss") : (hit ? "live" : "loss"), big: String(v), sub: (settled ? (hit ? "win" : "loss") : (hit ? "on pace" : "behind")) + " · " + p.min + " min · " + g.detail};
+  };
+  const marginNow = g0 => {
+    const g = byGame[g0.key]; if (!g || !g.started) return null;
+    return g;
+  };
+  $("#spots").innerHTML = BOARD.spots.length ? BOARD.spots.map(r => spotCard(r, spotNow(r))).join("") : '<div class="card"><small>No spots today.</small></div>';
+  $("#leans").innerHTML = BOARD.games.filter(g => g.lean).map(g0 => {
+    const g = marginNow(g0); if (!g) return leanCard(g0, {cls:"wait", big:"", sub:(byGame[g0.key] || {}).detail || "pending"});
+    const m = g.hs - g.as, cover = (m + g0.spread_home) * (g0.lean.team === g0.home ? 1 : -1);
+    const score = `${g.away} ${g.as}, ${g.home} ${g.hs}`;
+    return leanCard(g0, {cls: g.final ? (cover > 0 ? "win" : cover < 0 ? "loss" : "wait") : (cover > 0 ? "live" : "loss"), big: (cover > 0 ? "+" : "") + cover.toFixed(1), sub: (g.final ? (cover > 0 ? "covered" : cover < 0 ? "lost" : "push") : (cover > 0 ? "covering" : "not covering")) + " · " + score + " · " + g.detail});
+  }).join("") || '<div class="card"><small>No leans today.</small></div>';
+  $("#picks").innerHTML = BOARD.games.map(g0 => {
+    const g = marginNow(g0); if (!g) return pickCard(g0, {cls:"wait", big:"", sub:(byGame[g0.key] || {}).detail || "pending"});
+    const lead = g0.pick === g0.home ? g.hs - g.as : g.as - g.hs, score = `${g.away} ${g.as}, ${g.home} ${g.hs}`;
+    return pickCard(g0, {cls: g.final ? (lead > 0 ? "win" : "loss") : (lead > 0 ? "live" : "loss"), big: (lead > 0 ? "+" : "") + lead, sub: (g.final ? (lead > 0 ? "won" : "lost") : (lead > 0 ? "leading" : "trailing")) + " · " + score + " · " + g.detail});
+  }).join("");
+}
+async function refresh() {
+  const b = $("#go"); b.disabled = true; b.textContent = "Loading"; $("#err").hidden = true;
+  try {
+    const sb = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${BOARD.date.replace(/-/g,"")}`)).json();
+    const games = [];
+    for (const e of sb.events || []) {
+      const c = e.competitions[0], t = Object.fromEntries(c.competitors.map(x => [x.homeAway, x]));
+      const code = x => Object.keys(ESPN).find(k => ESPN[k] === x.team.abbreviation) || x.team.abbreviation;
+      const away = code(t.away), home = code(t.home), key = away + "@" + home;
+      if (!BOARD.games.some(g => g.key === key)) continue;
+      const st = e.status.type, g = {key, away, home, as: +t.away.score || 0, hs: +t.home.score || 0, started: st.state !== "pre", final: st.completed, detail: st.shortDetail, players: {}};
+      if (g.started && BOARD.spots.some(r => r.gkey === key)) {
+        const sum = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${e.id}`)).json();
+        for (const tm of (sum.boxscore || {}).players || []) {
+          const s0 = tm.statistics[0], iP = s0.labels.indexOf("PTS"), iR = s0.labels.indexOf("REB"), iM = s0.labels.indexOf("MIN");
+          for (const a of s0.athletes) if (!a.didNotPlay && a.stats.length) g.players[norm(a.athlete.displayName)] = {pts: +a.stats[iP], reb: +a.stats[iR], min: a.stats[iM]};
+        }
+      }
+      games.push(g);
+    }
+    render({games});
+    $("#stamp").textContent = `Board for ${BOARD.date_label}. Live from ESPN at ${new Date().toLocaleTimeString("en-US", {hour: "numeric", minute: "2-digit"})}. Unofficial.`;
+  } catch (err) {
+    $("#err").textContent = "Could not reach ESPN just now. Try again in a minute."; $("#err").hidden = false;
+  }
+  b.disabled = false; b.textContent = "Refresh";
+}
+render({games: []});
+$("#go").addEventListener("click", refresh);
+refresh();
+</script>
+</body>
+</html>
