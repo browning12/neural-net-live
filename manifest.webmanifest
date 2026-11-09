@@ -1,0 +1,16 @@
+{
+  "name": "Neural Net Live",
+  "short_name": "Neural Net",
+  "description": "Where tonight's Neural Net spots, leans and picks stand, live from ESPN. Unofficial. Not betting advice.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0D11",
+  "theme_color": "#0B0D11",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

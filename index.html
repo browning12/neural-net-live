@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#0B0D11">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Neural Net">
 <title>Neural Net Live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +34,8 @@ button{font:inherit;color:inherit}
 
 /* header */
 .top{position:sticky;top:0;z-index:5;margin:0 -16px;padding:12px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.installrow{margin:10px 0 0}
+.installrow .go{white-space:nowrap}
 .brand{font:900 20px/1 var(--ui);letter-spacing:-.02em;white-space:nowrap}
 .brand span{color:var(--accent)}
 .livepill{display:inline-flex;align-items:center;gap:6px;font:800 11px/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 9px}
@@ -179,6 +187,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
     <p class="kicker">Live tracker · Mon Nov 9</p>
     <h1>Where tonight stands</h1>
     <p class="stamp"><span id="stamp">Loading live numbers from ESPN</span><label class="auto"><input type="checkbox" id="auto">Auto-refresh every minute</label></p>
+    <p class="installrow" id="installrow" hidden><button class="go" id="install" type="button">Add to home screen as an app</button></p>
     <div class="tally" id="tally"></div>
   </section>
 
@@ -194,7 +203,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
 
   <div id="err"></div>
 
-  <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The model numbers are the ones logged before tip; the percentage is the model pulled halfway toward Vegas, as on the main site. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. Pace assumes a player keeps his current rate for a full game. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
+  <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The model numbers are the ones logged before tip; the percentage is the model pulled toward Vegas, as on the main site. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. Pace assumes a player keeps his current rate for a full game. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
   <p class="fine"><b>For entertainment and analysis, not betting advice.</b> Must be 21+ where sports betting is legal. If gambling stops being fun, call or text <b>1-800-MY-RESET</b>, the free national helpline run by the National Council on Problem Gambling, any time.</p>
 </div>
 <script>
@@ -376,6 +385,15 @@ $("#go").addEventListener("click", refresh);
 BOARD.spots.forEach((r, i) => r.key = i);
 render();
 refresh();
+</script>
+<script>
+// Installable app (Nov 9): register the service worker and surface Chrome's install prompt as a button when it is offered.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+let installEvt = null;
+const installBtn = document.getElementById('install'), installRow = document.getElementById('installrow');
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; installRow.hidden = false; });
+installBtn.addEventListener('click', async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; installRow.hidden = true; });
+window.addEventListener('appinstalled', () => { installRow.hidden = true; });
 </script>
 </body>
 </html>
