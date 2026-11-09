@@ -188,7 +188,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
   <section class="hero">
     <p class="kicker">Live tracker · Mon Nov 9</p>
     <h1>Where tonight stands</h1>
-    <p class="stamp"><span id="stamp">Loading live numbers from ESPN</span><label class="auto"><input type="checkbox" id="auto">Auto-refresh every minute</label><label class="auto" id="notifylbl"><input type="checkbox" id="notify">Notify me when a spot settles</label></p>
+    <p class="stamp"><span id="stamp">Loading live numbers from ESPN</span><label class="auto"><input type="checkbox" id="auto">Auto-refresh during games</label><label class="auto" id="notifylbl"><input type="checkbox" id="notify">Notify me when a spot settles</label></p>
     <nav class="links" aria-label="Neural Net pages"><a class="go" href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo" target="_blank" rel="noopener">Main site</a><a class="go" href="https://claude.ai/artifact/4M8KeFRsQAKLTjmcAf6GNV" target="_blank" rel="noopener">Daily review</a></nav>
     <p class="installrow" id="installrow" hidden><button class="go" id="install" type="button">Add to home screen as an app</button></p>
     <div class="tally" id="tally"></div>
@@ -376,6 +376,7 @@ async function refresh() {
     LIVE = {games};
     render();
     checkSettled(firstLoad); firstLoad = false;
+    if ($("#auto").checked) schedule();                       // cadence follows the game state: 5 min pregame, 1 min live, off at final
     $("#stamp").textContent = `Updated ${new Date().toLocaleTimeString("en-US", {hour: "numeric", minute: "2-digit"})} from ESPN. Unofficial.`;
   } catch (err) {
     $("#err").innerHTML = '<div class="err">Could not reach ESPN just now. Tap Refresh to try again.</div>';
@@ -383,8 +384,22 @@ async function refresh() {
   b.disabled = false; b.classList.remove("spin");
 }
 
+/* auto-refresh cadence (Nov 9): every 5 minutes before the first tip, every minute while any game is live, and it stops by
+   itself once every game is final, so the app is not polling ESPN all day for nothing. */
 let timer = null;
-$("#auto").addEventListener("change", e => { clearInterval(timer); timer = e.target.checked ? setInterval(() => { if (!document.hidden || $("#notify").checked) refresh(); }, 60000) : null; });
+function cadence() {
+  const gs = Object.values(LIVE.games);
+  if (BOARD.games.length && gs.length === BOARD.games.length && gs.every(g => g.final)) return 0;
+  return gs.some(g => g.started && !g.final) ? 60000 : 300000;
+}
+function schedule() {
+  clearTimeout(timer); timer = null;
+  if (!$("#auto").checked) return;
+  const ms = cadence();
+  if (!ms) { $("#auto").checked = false; return; }                 // all final: nothing left to watch tonight
+  timer = setTimeout(async () => { if (!document.hidden || $("#notify").checked) await refresh(); schedule(); }, ms);
+}
+$("#auto").addEventListener("change", schedule);
 
 /* in-app notifications (Nov 9, Bobby's call): while the app is open or just backgrounded, a phone notification the moment a
    spot, lean or pick settles. Nothing is sent from a server; the page itself notices the change on its minute refresh. */
