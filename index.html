@@ -188,7 +188,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
   <section class="hero">
     <p class="kicker">Live tracker · Mon Nov 9</p>
     <h1>Where tonight stands</h1>
-    <p class="stamp"><span id="stamp">Loading live numbers from ESPN</span><label class="auto"><input type="checkbox" id="auto">Auto-refresh every minute</label></p>
+    <p class="stamp"><span id="stamp">Loading live numbers from ESPN</span><label class="auto"><input type="checkbox" id="auto">Auto-refresh every minute</label><label class="auto" id="notifylbl"><input type="checkbox" id="notify">Notify me when a spot settles</label></p>
     <nav class="links" aria-label="Neural Net pages"><a class="go" href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo" target="_blank" rel="noopener">Main site</a><a class="go" href="https://claude.ai/artifact/4M8KeFRsQAKLTjmcAf6GNV" target="_blank" rel="noopener">Daily review</a></nav>
     <p class="installrow" id="installrow" hidden><button class="go" id="install" type="button">Add to home screen as an app</button></p>
     <div class="tally" id="tally"></div>
@@ -375,6 +375,7 @@ async function refresh() {
     }));
     LIVE = {games};
     render();
+    checkSettled(firstLoad); firstLoad = false;
     $("#stamp").textContent = `Updated ${new Date().toLocaleTimeString("en-US", {hour: "numeric", minute: "2-digit"})} from ESPN. Unofficial.`;
   } catch (err) {
     $("#err").innerHTML = '<div class="err">Could not reach ESPN just now. Tap Refresh to try again.</div>';
@@ -383,7 +384,54 @@ async function refresh() {
 }
 
 let timer = null;
-$("#auto").addEventListener("change", e => { clearInterval(timer); timer = e.target.checked ? setInterval(() => { if (!document.hidden) refresh(); }, 60000) : null; });
+$("#auto").addEventListener("change", e => { clearInterval(timer); timer = e.target.checked ? setInterval(() => { if (!document.hidden || $("#notify").checked) refresh(); }, 60000) : null; });
+
+/* in-app notifications (Nov 9, Bobby's call): while the app is open or just backgrounded, a phone notification the moment a
+   spot, lean or pick settles. Nothing is sent from a server; the page itself notices the change on its minute refresh. */
+const NKEY = "nn-settled-" + BOARD.date, notifyBox = $("#notify");
+let settled = new Set(); try { settled = new Set(JSON.parse(localStorage.getItem(NKEY) || "[]")); } catch (e) {}
+let firstLoad = true;
+function outcomes() {
+  const out = [], score = (g0, g) => `${g0.away} ${g.as}, ${g0.home} ${g.hs}`;
+  BOARD.spots.forEach(r => {
+    const g = LIVE.games[r.gkey], p = g && g.players[norm(r.name)], st = spotState(r, g, p);
+    if (st.cls === "win" || st.cls === "loss")
+      out.push({id: "s" + r.key, title: `Spot ${st.cls === "win" ? "won" : "lost"}: ${r.name} ${r.side.toLowerCase()} ${r.line} ${ab(r.stat)}`, body: `${st.v} ${word(r.stat)}${g.final ? " at the final" : " so far"}`});
+  });
+  BOARD.games.forEach(g0 => {
+    const g = LIVE.games[g0.key]; if (!g || !g.final) return;
+    if (g0.lean) { const c = ((g.hs - g.as) + g0.spread_home) * (g0.lean.team === g0.home ? 1 : -1);
+      out.push({id: "l" + g0.key, title: `Lean ${c > 0 ? "covered" : c < 0 ? "lost" : "pushed"}: ${g0.lean.text || g0.lean.team}`, body: score(g0, g)}); }
+    out.push({id: "p" + g0.key, title: `Pick ${(g0.pick === g0.home ? g.hs > g.as : g.as > g.hs) ? "won" : "lost"}: ${g0.pick}`, body: score(g0, g)});
+  });
+  return out;
+}
+async function notify(items) {
+  if (!items.length || !("Notification" in window) || Notification.permission !== "granted") return;
+  let reg = null; try { reg = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : null; } catch (e) {}
+  for (const it of items) {
+    const opts = {body: it.body, icon: "icons/icon-192.png", badge: "icons/icon-192.png", tag: it.id};
+    try { if (reg) await reg.showNotification(it.title, opts); else new Notification(it.title, opts); } catch (e) {}
+  }
+}
+function checkSettled(silent) {
+  const fresh = outcomes().filter(o => !settled.has(o.id));
+  fresh.forEach(o => settled.add(o.id));
+  try { localStorage.setItem(NKEY, JSON.stringify([...settled])); } catch (e) {}
+  if (!silent && notifyBox.checked) notify(fresh);
+}
+if (!("Notification" in window)) $("#notifylbl").hidden = true;
+notifyBox.addEventListener("change", async e => {
+  if (e.target.checked) {
+    let perm = Notification.permission;
+    if (perm === "default") { try { perm = await Notification.requestPermission(); } catch (err) { perm = "denied"; } }
+    if (perm !== "granted") { e.target.checked = false; $("#err").innerHTML = '<div class="err">Notifications are blocked for this app in your phone settings.</div>'; return; }
+    checkSettled(true);                                   // anything already settled is not news
+    if (!$("#auto").checked) { $("#auto").checked = true; $("#auto").dispatchEvent(new Event("change")); }
+  }
+  try { localStorage.setItem("nn-notify", e.target.checked ? "1" : "0"); } catch (err) {}
+});
+try { if (localStorage.getItem("nn-notify") === "1" && "Notification" in window && Notification.permission === "granted") { notifyBox.checked = true; $("#auto").checked = true; $("#auto").dispatchEvent(new Event("change")); } } catch (e) {}
 $("#go").addEventListener("click", refresh);
 BOARD.spots.forEach((r, i) => r.key = i);
 render();
