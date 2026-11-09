@@ -34,6 +34,8 @@ button{font:inherit;color:inherit}
 
 /* header */
 .top{position:sticky;top:0;z-index:5;margin:0 -16px;padding:12px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0}
+.links .go{text-decoration:none;background:var(--panel);color:var(--ink);border:1px solid var(--line)}
 .installrow{margin:10px 0 0}
 .installrow .go{white-space:nowrap}
 .brand{font:900 20px/1 var(--ui);letter-spacing:-.02em;white-space:nowrap}
@@ -187,6 +189,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
     <p class="kicker">Live tracker · Mon Nov 9</p>
     <h1>Where tonight stands</h1>
     <p class="stamp"><span id="stamp">Loading live numbers from ESPN</span><label class="auto"><input type="checkbox" id="auto">Auto-refresh every minute</label></p>
+    <nav class="links" aria-label="Neural Net pages"><a class="go" href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo" target="_blank" rel="noopener">Main site</a><a class="go" href="https://claude.ai/artifact/4M8KeFRsQAKLTjmcAf6GNV" target="_blank" rel="noopener">Daily review</a></nav>
     <p class="installrow" id="installrow" hidden><button class="go" id="install" type="button">Add to home screen as an app</button></p>
     <div class="tally" id="tally"></div>
   </section>
