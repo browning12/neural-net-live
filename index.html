@@ -187,6 +187,37 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
 .pfoot{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font:700 11px/1.3 var(--ui);color:var(--muted)}
 .pfoot b{color:var(--tone,var(--muted))}
 
+/* game sheet (Nov 9): tap any spot, lean or pick card for the live box score */
+[data-game]{cursor:pointer}
+[data-game]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sheet{position:fixed;inset:0;z-index:30}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.panel{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:var(--bg);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:0 16px max(20px,env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+.shead{position:sticky;top:0;background:var(--bg);display:flex;align-items:center;gap:12px;padding:14px 0 10px;border-bottom:1px solid var(--line);z-index:1}
+.shead h3{margin:0;font:800 18px/1.2 var(--cond);letter-spacing:.02em;text-transform:uppercase;flex:1}
+.x{background:var(--raise);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:14px 0 4px;text-align:center}
+.score .tm b{display:block;font:800 22px/1 var(--cond)}
+.score .tm em{display:block;font:800 40px/1.05 var(--cond);font-style:normal}
+.score .mid{font-size:12px;color:var(--muted);font-weight:700}
+.lines,.tstats,.box{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.lines th,.lines td,.tstats td,.box th,.box td{padding:6px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.lines th:first-child,.lines td:first-child,.box th:first-child,.box td:first-child{text-align:left}
+.lines th,.box th{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em}
+.tstats td:nth-child(2){text-align:center;color:var(--muted);font-size:12px}
+.tstats td:first-child{text-align:left}
+.tstats td:last-child{text-align:right}
+.tstats b{font-weight:800}
+.shh{font:800 13px/1 var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+.bx{overflow-x:auto;margin:0 -16px;padding:0 16px}
+.box td:first-child{position:sticky;left:0;background:var(--bg);max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.box tr.bench td:first-child{color:var(--muted)}
+.box tr.ours td{background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
+.box .stag{display:inline-block;margin-left:6px;font:800 9px/1 var(--ui);padding:2px 5px;border-radius:4px;background:var(--accent);color:#fff;letter-spacing:.04em}
+.box .dnp td{color:var(--muted)}
+.box tfoot td{font-weight:800}
+.snote{color:var(--muted);font-size:13px;margin:14px 0}
+body.noscroll{overflow:hidden}
 .empty{background:var(--panel);border:1px dashed var(--line);border-radius:16px;padding:16px;color:var(--muted);font-size:14px}
 .err{background:color-mix(in srgb,var(--neg) 10%,var(--panel));border:1px solid color-mix(in srgb,var(--neg) 40%,var(--line));color:var(--ink);border-radius:12px;padding:10px 12px;font-size:13px;margin-top:12px}
 .fine{color:var(--muted);font-size:12px;margin-top:22px;border-top:1px solid var(--line);padding-top:12px;line-height:1.5}
@@ -226,6 +257,13 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
   <div class="picks" id="picks"></div>
 
   <div id="err"></div>
+  <div class="sheet" id="sheet" hidden>
+    <div class="scrim" id="scrim"></div>
+    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="sheettitle">
+      <header class="shead"><h3 id="sheettitle">Box score</h3><button type="button" class="x" id="sheetx" aria-label="Close">Close</button></header>
+      <div id="sheetbody"></div>
+    </section>
+  </div>
 
   <p class="fine"><b>Unofficial.</b> Live numbers come from ESPN's box scores and can differ from the official final by a rebound or an assist. The model numbers are the ones logged before tip; the percentage is the model pulled toward Vegas, as on the main site. The record on the main site is graded from Basketball Reference the next morning, and nothing here changes what was logged before tip. Pace assumes a player keeps his current rate for a full game. <a href="https://claude.ai/artifact/GQ1pkz5rYCCFd5r9LAs6Jo">Back to the site</a>.</p>
   <p class="fine"><b>For entertainment and analysis, not betting advice.</b> Must be 21+ where sports betting is legal. If gambling stops being fun, call or text <b>1-800-MY-RESET</b>, the free national helpline run by the National Council on Problem Gambling, any time.</p>
@@ -304,7 +342,7 @@ function spotCard(r) {
   const face = img ? `<img src="${esc(img)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}'}))">` : `<span>${esc(r.name.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>`;
   const viz = r.stat === "reb" ? balls(r, st) : track(r, st);
   const meta = p ? `<div class="meta"><span><b>${p.min}</b> MIN</span><span><b>${p.pts}</b> PTS</span><span><b>${p.reb}</b> REB</span><span><b>${p.ast}</b> AST</span><span>FG <b>${p.fg}</b></span>${st.pace ? `<span style="color:var(--warn)">Finish <b style="color:var(--warn)">${st.pace.toFixed(1)}</b></span>` : ""}</div>` : "";
-  return `<article class="spot ${st.cls}">
+  return `<article class="spot ${st.cls}" data-game="${r.gkey}" tabindex="0" role="button" aria-label="Open the box score">
     <div class="who"><div class="face">${face}</div>
       <div class="nm"><b>${esc(r.name)}</b><small>${r.team} ${r.home ? "vs" : "at"} ${r.opp} · ${esc(status(g).txt)}</small><span class="bet">${r.side} ${r.line} ${ab(r.stat)}<i>${price(r.price)}</i></span></div>
       <div class="big"><b>${st.v ?? "–"}</b><small>${ab(r.stat)}</small><span class="state">${esc(st.label)}</span></div></div>
@@ -317,14 +355,14 @@ function teamImg(g, side) { const u = g && g[side + "Logo"]; return u ? `<img sr
 
 function leanCard(g0) {
   const g = LIVE.games[g0.key], s = status(g);
-  if (!g || !g.started) return `<article class="lean"><div class="lhead"><div><b>${esc(g0.lean.text)}</b><small>${g0.away} at ${g0.home} · ${esc(s.txt)}</small></div></div>
+  if (!g || !g.started) return `<article class="lean" data-game="${g0.key}" tabindex="0" role="button" aria-label="Open the box score"><div class="lhead"><div><b>${esc(g0.lean.text)}</b><small>${g0.away} at ${g0.home} · ${esc(s.txt)}</small></div></div>
     <div class="meter"><div class="rail"></div><div class="mid"></div><div class="lbl"><span>not covering</span><span>covering</span></div></div><p class="verdict">Waiting for tip</p></article>`;
   const m = g.hs - g.as, cover = (m + g0.spread_home) * (g0.lean.team === g0.home ? 1 : -1);
   const cls = g.final ? (cover > 0 ? "win" : cover < 0 ? "loss" : "wait") : (cover > 0 ? "live" : "loss");
   const w = Math.min(50, Math.abs(cover) / 25 * 50), left = cover >= 0 ? 50 : 50 - w;
   const verdict = g.final ? (cover > 0 ? `Covered by ${cover.toFixed(1)}` : cover < 0 ? `Lost by ${(-cover).toFixed(1)}` : "Push")
     : (cover > 0 ? `Covering by ${cover.toFixed(1)}` : cover < 0 ? `Behind by ${(-cover).toFixed(1)}` : "Right on the number");
-  return `<article class="lean ${cls}"><div class="lhead"><div><b>${esc(g0.lean.text)}</b><small>Vegas ${g0.home} ${sign(g0.spread_home)} · ${esc(s.txt)}</small></div>
+  return `<article class="lean ${cls}" data-game="${g0.key}" tabindex="0" role="button" aria-label="Open the box score"><div class="lhead"><div><b>${esc(g0.lean.text)}</b><small>Vegas ${g0.home} ${sign(g0.spread_home)} · ${esc(s.txt)}</small></div>
     <div class="sb">${teamImg(g, "away")}<span class="${g.as < g.hs ? "l" : ""}">${g0.away}</span><span class="${g.as < g.hs ? "l" : ""}">${g.as}</span>${teamImg(g, "home")}<span class="${g.hs < g.as ? "l" : ""}">${g0.home}</span><span class="${g.hs < g.as ? "l" : ""}">${g.hs}</span></div></div>
     <div class="meter"><div class="rail"></div><div class="bar" style="left:${left}%;width:${w}%"></div><div class="mid"></div><div class="lbl"><span>not covering</span><span>covering</span></div></div>
     <p class="verdict">${verdict}</p></article>`;
@@ -347,7 +385,7 @@ function pickCard(g0) {
   const vres = !g || !g.started || !g0.vegas ? "" : g.final ? ((g0.vegas === g0.home ? g.hs > g.as : g.as > g.hs) ? " · Vegas won" : " · Vegas lost") : "";
   const sp = g0.spread_home, fav = sp < 0 ? g0.home : g0.away;
   const vline = `<div class="vline">Vegas line <b>${fav} ${sp === 0 ? "PK" : "-" + Math.abs(sp)}</b>${vres}</div>`;
-  return `<article class="pick ${cls}${split ? " split" : ""}">${banner}${row(g0.away, as, "away")}${row(g0.home, hs, "home")}${vline}<div class="pfoot"><span>${esc(s.txt)}</span><b>${out}</b></div></article>`;
+  return `<article class="pick ${cls}${split ? " split" : ""}" data-game="${g0.key}" tabindex="0" role="button" aria-label="Open the box score">${banner}${row(g0.away, as, "away")}${row(g0.home, hs, "home")}${vline}<div class="pfoot"><span>${esc(s.txt)}</span><b>${out}</b></div></article>`;
 }
 
 function render() {
@@ -394,7 +432,8 @@ async function refresh() {
       if (!BOARD.games.some(g => g.key === key)) return;
       const st = e.status.type;
       const g = {key, as: +t.away.score || 0, hs: +t.home.score || 0, started: st.state !== "pre", final: !!st.completed, detail: st.shortDetail,
-                 period: e.status.period || 0, clock: e.status.displayClock, awayLogo: t.away.team.logo, homeLogo: t.home.team.logo, players: {}};
+                 period: e.status.period || 0, clock: e.status.displayClock, awayLogo: t.away.team.logo, homeLogo: t.home.team.logo, players: {},
+                 id: e.id, awayLines: (t.away.linescores || []).map(x => x.value), homeLines: (t.home.linescores || []).map(x => x.value)};
       if (g.started && BOARD.spots.some(r => r.gkey === key)) {
         const sum = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${e.id}`, {cache: "no-store"})).json();
         for (const tm of (sum.boxscore || {}).players || []) {
@@ -410,6 +449,7 @@ async function refresh() {
     LIVE = {games};
     render();
     checkSettled(firstLoad); firstLoad = false;
+    if (openKey) drawGame(true);
     if ($("#auto").checked) schedule();                       // cadence follows the game state: 5 min pregame, 1 min live, off at final
     $("#stamp").textContent = `Updated ${new Date().toLocaleTimeString("en-US", {hour: "numeric", minute: "2-digit"})} from ESPN. Unofficial.`;
   } catch (err) {
@@ -417,6 +457,76 @@ async function refresh() {
   }
   b.disabled = false; b.classList.remove("spin");
 }
+
+/* game sheet (Nov 9, Bobby): tap a card to see that game's live box score from ESPN's summary feed */
+let openKey = null, lastFocus = null;
+const SUMS = {};
+async function summary(g, force) {
+  const hit = SUMS[g.id];
+  if (hit && !force && Date.now() - hit.at < 20000) return hit.d;
+  const d = await (await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${g.id}`, {cache: "no-store"})).json();
+  SUMS[g.id] = {at: Date.now(), d}; return d;
+}
+function openGame(key) {
+  if (!BOARD.games.some(x => x.key === key)) return;
+  openKey = key; lastFocus = document.activeElement;
+  $("#sheet").hidden = false; document.body.classList.add("noscroll"); $("#sheetx").focus();
+  drawGame(false);
+}
+function closeGame() {
+  openKey = null; $("#sheet").hidden = true; document.body.classList.remove("noscroll");
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+document.addEventListener("click", e => {
+  const c = e.target.closest("[data-game]");
+  if (c && !e.target.closest("a,button,input,label,.sheet")) openGame(c.dataset.game);
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && openKey) closeGame();
+  else if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("[data-game]")) { e.preventDefault(); openGame(e.target.dataset.game); }
+});
+$("#scrim").addEventListener("click", closeGame);
+$("#sheetx").addEventListener("click", closeGame);
+async function drawGame(force) {
+  const key = openKey; if (!key) return;
+  const g0 = BOARD.games.find(x => x.key === key), g = LIVE.games[key], s = status(g);
+  $("#sheettitle").textContent = `${g0.away} at ${g0.home}`;
+  const head = `<div class="score"><div class="tm"><b>${g0.away}</b><em>${g && g.started ? g.as : "–"}</em></div><div class="mid">${esc(s.txt)}</div><div class="tm"><b>${g0.home}</b><em>${g && g.started ? g.hs : "–"}</em></div></div>`;
+  if (!g || !g.started || !g.id) { $("#sheetbody").innerHTML = head + `<p class="snote">The box score appears here at tip${g0.time ? ", " + esc(g0.time) + " ET" : ""}.</p>`; return; }
+  const per = Math.max(g.awayLines.length, g.homeLines.length);
+  const pl = i => i < 4 ? "Q" + (i + 1) : (i === 4 ? "OT" : "OT" + (i - 3));
+  const lines = per ? `<table class="lines"><thead><tr><th></th>${Array.from({length: per}, (_, i) => `<th>${pl(i)}</th>`).join("")}<th>T</th></tr></thead><tbody>
+    <tr><td><b>${g0.away}</b></td>${Array.from({length: per}, (_, i) => `<td>${g.awayLines[i] ?? ""}</td>`).join("")}<td><b>${g.as}</b></td></tr>
+    <tr><td><b>${g0.home}</b></td>${Array.from({length: per}, (_, i) => `<td>${g.homeLines[i] ?? ""}</td>`).join("")}<td><b>${g.hs}</b></td></tr></tbody></table>` : "";
+  if (!$("#sheetbody").innerHTML.includes('class="score"') || $("#sheettitle").dataset.k !== key) $("#sheetbody").innerHTML = head + lines + '<p class="snote">Loading the box score from ESPN…</p>';
+  $("#sheettitle").dataset.k = key;
+  let d;
+  try { d = await summary(g, force); } catch (err) { if (openKey === key) $("#sheetbody").innerHTML = head + lines + '<p class="snote">Could not reach ESPN just now. Tap Refresh to try again.</p>'; return; }
+  if (openKey !== key) return;
+  const bs = d.boxscore || {}, ab = x => Object.keys(ESPN).find(k => ESPN[k] === x) || x;
+  const ts = {}; (bs.teams || []).forEach(x => { ts[ab(x.team.abbreviation)] = Object.fromEntries((x.statistics || []).map(v => [v.name, v.displayValue])); });
+  const A = ts[g0.away] || {}, H = ts[g0.home] || {};
+  const trow = (lab, k) => A[k] != null || H[k] != null ? `<tr><td><b>${esc(A[k] ?? "")}</b></td><td>${lab}</td><td><b>${esc(H[k] ?? "")}</b></td></tr>` : "";
+  const tstats = `<div class="shh">Team stats</div><table class="tstats"><tbody>${[["FG", "fieldGoalsMade-fieldGoalsAttempted"], ["FG %", "fieldGoalPct"], ["3PT", "threePointFieldGoalsMade-threePointFieldGoalsAttempted"], ["3PT %", "threePointFieldGoalPct"], ["FT", "freeThrowsMade-freeThrowsAttempted"], ["Rebounds", "totalRebounds"], ["Assists", "assists"], ["Turnovers", "totalTurnovers"], ["Points in paint", "pointsInPaint"], ["Fast break", "fastBreakPoints"], ["Largest lead", "largestLead"]].map(([l, k]) => trow(l, k)).join("")}</tbody></table>`;
+  const ours = new Set(BOARD.spots.filter(r => r.gkey === key).map(r => norm(r.name)));
+  const spotOf = n => BOARD.spots.find(r => r.gkey === key && norm(r.name) === n);
+  const COLS = ["MIN", "PTS", "REB", "AST", "FG", "3PT", "FT", "STL", "BLK", "TO", "+/-"];
+  const teamBox = tm => {
+    const s0 = (tm.statistics || [])[0]; if (!s0) return "";
+    const at = l => s0.labels.indexOf(l);
+    const rows = s0.athletes.map(a => {
+      const n = norm(a.athlete.displayName), sp = spotOf(n);
+      const tag = sp ? `<span class="stag">${sp.side === "Over" ? "O" : "U"} ${sp.line} ${ab_(sp.stat)}</span>` : "";
+      if (a.didNotPlay || !a.stats.length) return `<tr class="dnp ${a.starter ? "" : "bench"}"><td>${esc(a.athlete.shortName || a.athlete.displayName)}${tag}</td><td colspan="${COLS.length}" style="text-align:left">${esc(a.reason || "DNP")}</td></tr>`;
+      return `<tr class="${a.starter ? "" : "bench"} ${ours.has(n) ? "ours" : ""}"><td>${esc(a.athlete.shortName || a.athlete.displayName)}${tag}</td>${COLS.map(c => `<td>${esc(at(c) >= 0 ? a.stats[at(c)] : "")}</td>`).join("")}</tr>`;
+    }).join("");
+    const tot = s0.totals && s0.totals.length ? `<tfoot><tr><td>Team</td>${COLS.map(c => `<td>${esc(at(c) >= 0 ? s0.totals[at(c)] : "")}</td>`).join("")}</tr></tfoot>` : "";
+    return `<div class="shh">${esc(ab(tm.team.abbreviation))} players</div><div class="bx"><table class="box"><thead><tr><th>Player</th>${COLS.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${rows}</tbody>${tot}</table></div>`;
+  };
+  const order = (bs.players || []).slice().sort((x, y) => (ab(x.team.abbreviation) === g0.home) - (ab(y.team.abbreviation) === g0.home));
+  $("#sheetbody").innerHTML = head + lines + tstats + order.map(teamBox).join("") + '<p class="snote">From ESPN, unofficial. Bench players in gray; our spot players highlighted.</p>';
+}
+const ab_ = s => s === "pts" ? "PTS" : "REB";
 
 /* auto-refresh cadence (Nov 9): every 5 minutes before the first tip, every minute while any game is live, and it stops by
    itself once every game is final, so the app is not polling ESPN all day for nothing. */
