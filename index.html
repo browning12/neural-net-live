@@ -163,15 +163,27 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
 .prow img{width:22px;height:22px}
 .prow b{font:800 18px/1 var(--cond);letter-spacing:.02em}
 .prow em{font:800 20px/1 var(--cond);font-style:normal}
-.prow.mine b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:3px}
+.prow.mine b::after{content:none}
 .prow.dim{opacity:.55}
 .vtag{display:inline-block;margin-left:6px;font:800 10px/1 var(--ui);letter-spacing:.06em;padding:3px 5px;border-radius:5px;background:var(--raise);color:var(--muted);vertical-align:2px;font-style:normal}
-.pick.split{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 55%,transparent)}
-.splitnote{font:800 10px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--warn);margin:0 0 6px}
+.pick.split{box-shadow:inset 0 0 0 2px var(--warn)}
+.vs{display:flex;align-items:center;gap:8px;margin:-12px -12px 10px;padding:8px 12px;font-size:13px;font-weight:600}
+.vs b{font-weight:800}
+.vsx{font:900 11px/1 var(--ui);letter-spacing:.12em;padding:4px 7px;border-radius:5px}
+.vs.split{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--ink)}
+.vs.split .vsx{background:var(--warn);color:#111}
+.vs.agree{background:color-mix(in srgb,var(--pos) 12%,transparent);color:var(--muted)}
+.vs.agree .vsx{background:color-mix(in srgb,var(--pos) 75%,transparent);color:#06140d}
+.tn{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.tg{font:800 10px/1 var(--ui);letter-spacing:.05em;padding:3px 6px;border-radius:5px;font-style:normal;white-space:nowrap}
+.tg.tm{background:var(--accent);color:#fff}
+.tg.tv{background:var(--raise);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
 .vline{font-size:12px;color:var(--muted);margin-top:6px}
 .vline b{color:var(--ink)}
 .season{margin:-4px 0 12px;font-size:13px;color:var(--muted)}
 .season b{color:var(--ink)}
+.season .cnt-split{color:var(--warn)}
+.season .cnt-agree{color:var(--pos)}
 .pfoot{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font:700 11px/1.3 var(--ui);color:var(--muted)}
 .pfoot b{color:var(--tone,var(--muted))}
 
@@ -209,7 +221,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
   <h2>Leans <small>against the spread</small></h2>
   <div id="leans"></div>
 
-  <h2>Straight-up picks <small>the dot is the model, the tag is Vegas</small></h2>
+  <h2>Straight-up picks <small>model against Vegas, splits first</small></h2>
   <p class="season" id="season"></p>
   <div class="picks" id="picks"></div>
 
@@ -325,19 +337,23 @@ function pickCard(g0) {
   const cls = lead === null ? "wait" : g.final ? (lead > 0 ? "win" : "loss") : (lead > 0 ? "live" : "loss");
   const out = lead === null ? `${g0.p}% to win` : g.final ? (lead > 0 ? "Won" : "Lost") : (lead > 0 ? `Up ${lead}` : lead < 0 ? `Down ${-lead}` : "Tied");
   const ml = t => t === g0.home ? g0.ml_home : g0.ml_away;
-  const vt = t => g0.vegas === t && ml(t) != null ? `<i class="vtag">VEGAS ${price(ml(t))}</i>` : "";
-  const row = (t, sc, side) => `<div class="prow ${g0.pick === t ? "mine" : ""} ${g && g.started && sc < (side === "away" ? hs : as) ? "dim" : ""}">${teamImg(g, side)}<b>${t}${vt(t)}</b><em>${sc}</em></div>`;
-  const split = g0.vegas && g0.vegas !== g0.pick;
+  const split = !!(g0.vegas && g0.vegas !== g0.pick);
+  // explicit tags instead of a dot: MODEL on the model's team, VEGAS on the moneyline favorite (both on one team when they agree)
+  const tags = t => (g0.pick === t ? `<i class="tg tm">MODEL ${g0.p}%</i>` : "") + (g0.vegas === t && ml(t) != null ? `<i class="tg tv">VEGAS ${price(ml(t))}</i>` : "");
+  const row = (t, sc, side) => `<div class="prow ${g0.pick === t ? "mine" : ""} ${g && g.started && sc < (side === "away" ? hs : as) ? "dim" : ""}">${teamImg(g, side)}<span class="tn"><b>${t}</b>${tags(t)}</span><em>${sc}</em></div>`;
+  const banner = !g0.vegas ? "" : split
+    ? `<div class="vs split"><span class="vsx">SPLIT</span><span>Model <b>${g0.pick}</b> · Vegas <b>${g0.vegas}</b></span></div>`
+    : `<div class="vs agree"><span class="vsx">AGREE</span><span>Model and Vegas both <b>${g0.pick}</b></span></div>`;
   const vres = !g || !g.started || !g0.vegas ? "" : g.final ? ((g0.vegas === g0.home ? g.hs > g.as : g.as > g.hs) ? " · Vegas won" : " · Vegas lost") : "";
   const sp = g0.spread_home, fav = sp < 0 ? g0.home : g0.away;
   const vline = `<div class="vline">Vegas line <b>${fav} ${sp === 0 ? "PK" : "-" + Math.abs(sp)}</b>${vres}</div>`;
-  return `<article class="pick ${cls}${split ? " split" : ""}">${split ? '<p class="splitnote">Model vs Vegas</p>' : ""}${row(g0.away, as, "away")}${row(g0.home, hs, "home")}${vline}<div class="pfoot"><span>${esc(s.txt)}</span><b>${out}</b></div></article>`;
+  return `<article class="pick ${cls}${split ? " split" : ""}">${banner}${row(g0.away, as, "away")}${row(g0.home, hs, "home")}${vline}<div class="pfoot"><span>${esc(s.txt)}</span><b>${out}</b></div></article>`;
 }
 
 function render() {
   $("#spots").innerHTML = BOARD.spots.length ? BOARD.spots.map(spotCard).join("") : '<div class="empty">No prop spots on today\'s board.</div>';
   $("#leans").innerHTML = BOARD.games.some(g => g.lean) ? BOARD.games.filter(g => g.lean).map(leanCard).join("") : '<div class="empty">No leans on today\'s board.</div>';
-  $("#picks").innerHTML = BOARD.games.map(pickCard).join("");
+  $("#picks").innerHTML = [...BOARD.games].sort((a, b) => (b.vegas && b.vegas !== b.pick) - (a.vegas && a.vegas !== a.pick)).map(pickCard).join("");
   const tally = (items, f) => { const s = items.map(f); return {w: s.filter(x => x === "win").length, l: s.filter(x => x === "loss").length, p: s.filter(x => x !== "win" && x !== "loss").length}; };
   const fin = (cls, g) => g && g.final ? cls : (cls === "win" && g && g.started ? "win" : "pend");
   const sp = tally(BOARD.spots, r => { const g = LIVE.games[r.gkey]; const c = spotState(r, g, g && g.players[norm(r.name)]).cls; return c === "win" ? "win" : (c === "loss" && g && (g.final || r.side === "Under")) ? "loss" : "pend"; });
@@ -347,7 +363,7 @@ function render() {
   const box = (n, t) => `<div><small>${n}</small><b>${t.w}-${t.l}</b><em>${t.p ? t.p + " to go" : "all settled"}</em></div>`;
   $("#tally").innerHTML = box("Spots", sp) + box("Leans", ln) + box("Model picks", pk) + box("Vegas picks", vg);
   const S0 = BOARD.season, nSplit = BOARD.games.filter(g0 => g0.vegas && g0.vegas !== g0.pick).length;
-  if (S0 && S0.n) $("#season").innerHTML = `Season straight up: model <b>${S0.model}-${S0.n - S0.model}</b>, Vegas favorites <b>${S0.vegas}-${S0.n - S0.vegas}</b>. ${nSplit ? `Tonight they disagree on <b>${nSplit}</b> game${nSplit > 1 ? "s" : ""}.` : "Tonight they agree on every game."}`;
+  if (S0 && S0.n) $("#season").innerHTML = `Season straight up: model <b>${S0.model}-${S0.n - S0.model}</b>, Vegas favorites <b>${S0.vegas}-${S0.n - S0.vegas}</b>. Tonight: <b class="cnt-split">${nSplit} split</b>, <b class="cnt-agree">${BOARD.games.filter(g0 => g0.vegas).length - nSplit} agree</b>.`;
   const live = Object.values(LIVE.games).filter(g => g.started && !g.final).length, done = Object.values(LIVE.games).filter(g => g.final).length;
   $("#pill").classList.toggle("on", live > 0);
   $("#pilltxt").textContent = live ? `${live} live` : done && done === BOARD.games.length ? "Final" : "Pregame";
