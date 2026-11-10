@@ -58,7 +58,8 @@ h1{font:800 34px/1 var(--cond);font-style:italic;text-transform:uppercase;margin
 .stamp{color:var(--muted);font-size:12px;margin:8px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .auto{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
 .auto input{accent-color:var(--accent)}
-.tally{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.tally{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+@media (max-width:520px){.tally{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .tally div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
 .tally small{display:block;font:800 11px/1.2 var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .tally b{display:block;font:800 26px/1.1 var(--cond);font-style:italic;margin-top:2px}
@@ -164,6 +165,13 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
 .prow em{font:800 20px/1 var(--cond);font-style:normal}
 .prow.mine b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:3px}
 .prow.dim{opacity:.55}
+.vtag{display:inline-block;margin-left:6px;font:800 10px/1 var(--ui);letter-spacing:.06em;padding:3px 5px;border-radius:5px;background:var(--raise);color:var(--muted);vertical-align:2px;font-style:normal}
+.pick.split{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 55%,transparent)}
+.splitnote{font:800 10px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--warn);margin:0 0 6px}
+.vline{font-size:12px;color:var(--muted);margin-top:6px}
+.vline b{color:var(--ink)}
+.season{margin:-4px 0 12px;font-size:13px;color:var(--muted)}
+.season b{color:var(--ink)}
 .pfoot{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font:700 11px/1.3 var(--ui);color:var(--muted)}
 .pfoot b{color:var(--tone,var(--muted))}
 
@@ -201,7 +209,8 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
   <h2>Leans <small>against the spread</small></h2>
   <div id="leans"></div>
 
-  <h2>Straight-up picks <small>the dot marks the model's pick</small></h2>
+  <h2>Straight-up picks <small>the dot is the model, the tag is Vegas</small></h2>
+  <p class="season" id="season"></p>
   <div class="picks" id="picks"></div>
 
   <div id="err"></div>
@@ -210,7 +219,7 @@ h2 small{font:600 12px var(--ui);font-style:normal;text-transform:none;color:var
   <p class="fine"><b>For entertainment and analysis, not betting advice.</b> Must be 21+ where sports betting is legal. If gambling stops being fun, call or text <b>1-800-MY-RESET</b>, the free national helpline run by the National Council on Problem Gambling, any time.</p>
 </div>
 <script>
-const BOARD = {"date": "2026-11-09", "date_label": "Mon Nov 9", "games": [{"key": "LAL@ATL", "away": "LAL", "home": "ATL", "time": "7:00 PM", "spread_home": -1.5, "lean": {"team": "LAL", "line": 1.5, "text": "LAL +1.5"}, "pick": "LAL", "p": 64}, {"key": "CLE@CHA", "away": "CLE", "home": "CHA", "time": "7:00 PM", "spread_home": 9.5, "lean": {"team": "CHA", "line": 9.5, "text": "CHA +9.5"}, "pick": "CLE", "p": 72}, {"key": "WAS@DET", "away": "WAS", "home": "DET", "time": "7:00 PM", "spread_home": -10.5, "lean": null, "pick": "DET", "p": 86}, {"key": "MEM@TOR", "away": "MEM", "home": "TOR", "time": "7:30 PM", "spread_home": -2.5, "lean": null, "pick": "TOR", "p": 57}, {"key": "IND@DAL", "away": "IND", "home": "DAL", "time": "8:00 PM", "spread_home": -3.5, "lean": {"team": "DAL", "line": -3.5, "text": "DAL -3.5"}, "pick": "DAL", "p": 72}, {"key": "DEN@HOU", "away": "DEN", "home": "HOU", "time": "8:30 PM", "spread_home": -8.5, "lean": {"team": "DEN", "line": 8.5, "text": "DEN +8.5"}, "pick": "HOU", "p": 60}, {"key": "SAS@PHX", "away": "SAS", "home": "PHX", "time": "9:00 PM", "spread_home": 8.5, "lean": null, "pick": "SAS", "p": 68}, {"key": "NOP@GSW", "away": "NOP", "home": "GSW", "time": "10:00 PM", "spread_home": -9.5, "lean": null, "pick": "GSW", "p": 77}], "spots": [{"name": "P.J. Washington", "team": "DAL", "opp": "IND", "home": true, "stat": "reb", "line": 6.5, "side": "Over", "proj": 8.0, "avg": 7.5, "g": 10, "last5": [10, 5, 10, 6, 5], "p_model": 61, "p_vegas": 54, "price": -138, "gkey": "IND@DAL"}, {"name": "Kevin Durant", "team": "HOU", "opp": "DEN", "home": true, "stat": "pts", "line": 20.5, "side": "Over", "proj": 23.2, "avg": 20.8, "g": 10, "last5": [28, 14, 12, 21, 21], "p_model": 57, "p_vegas": 50, "price": -114, "gkey": "DEN@HOU"}, {"name": "Jake LaRavia", "team": "LAL", "opp": "ATL", "home": false, "stat": "reb", "line": 3.5, "side": "Over", "proj": 4.2, "avg": 3.6, "g": 10, "last5": [2, 4, 2, 8, 1], "p_model": 55, "p_vegas": 49, "price": -109, "gkey": "LAL@ATL"}, {"name": "Daniss Jenkins", "team": "DET", "opp": "WAS", "home": true, "stat": "reb", "line": 2.5, "side": "Over", "proj": 3.2, "avg": 3.3, "g": 9, "last5": [2, 3, 1, 1, 5], "p_model": 58, "p_vegas": 54, "price": -135, "gkey": "WAS@DET"}]};
+const BOARD = {"date": "2026-11-09", "date_label": "Mon Nov 9", "season": {"n": 99, "model": 71, "vegas": 73}, "games": [{"key": "LAL@ATL", "away": "LAL", "home": "ATL", "time": "7:00 PM", "spread_home": -1.5, "lean": {"team": "LAL", "line": 1.5, "text": "LAL +1.5"}, "pick": "LAL", "p": 64, "vegas": "ATL", "ml_away": -101, "ml_home": -117}, {"key": "CLE@CHA", "away": "CLE", "home": "CHA", "time": "7:00 PM", "spread_home": 9.5, "lean": {"team": "CHA", "line": 9.5, "text": "CHA +9.5"}, "pick": "CLE", "p": 72, "vegas": "CLE", "ml_away": -371, "ml_home": 295}, {"key": "WAS@DET", "away": "WAS", "home": "DET", "time": "7:00 PM", "spread_home": -10.5, "lean": null, "pick": "DET", "p": 86, "vegas": "DET", "ml_away": 376, "ml_home": -490}, {"key": "MEM@TOR", "away": "MEM", "home": "TOR", "time": "7:30 PM", "spread_home": -2.5, "lean": null, "pick": "TOR", "p": 57, "vegas": "TOR", "ml_away": 131, "ml_home": -156}, {"key": "IND@DAL", "away": "IND", "home": "DAL", "time": "8:00 PM", "spread_home": -3.5, "lean": {"team": "DAL", "line": -3.5, "text": "DAL -3.5"}, "pick": "DAL", "p": 72, "vegas": "DAL", "ml_away": 131, "ml_home": -155}, {"key": "DEN@HOU", "away": "DEN", "home": "HOU", "time": "8:30 PM", "spread_home": -8.5, "lean": {"team": "DEN", "line": 8.5, "text": "DEN +8.5"}, "pick": "HOU", "p": 60, "vegas": "HOU", "ml_away": 276, "ml_home": -344}, {"key": "SAS@PHX", "away": "SAS", "home": "PHX", "time": "9:00 PM", "spread_home": 8.5, "lean": null, "pick": "SAS", "p": 68, "vegas": "SAS", "ml_away": -359, "ml_home": 286}, {"key": "NOP@GSW", "away": "NOP", "home": "GSW", "time": "10:00 PM", "spread_home": -9.5, "lean": null, "pick": "GSW", "p": 77, "vegas": "GSW", "ml_away": 312, "ml_home": -395}], "spots": [{"name": "P.J. Washington", "team": "DAL", "opp": "IND", "home": true, "stat": "reb", "line": 6.5, "side": "Over", "proj": 8.0, "avg": 7.5, "g": 10, "last5": [10, 5, 10, 6, 5], "p_model": 61, "p_vegas": 54, "price": -138, "gkey": "IND@DAL"}, {"name": "Kevin Durant", "team": "HOU", "opp": "DEN", "home": true, "stat": "pts", "line": 20.5, "side": "Over", "proj": 23.2, "avg": 20.8, "g": 10, "last5": [28, 14, 12, 21, 21], "p_model": 57, "p_vegas": 50, "price": -114, "gkey": "DEN@HOU"}, {"name": "Jake LaRavia", "team": "LAL", "opp": "ATL", "home": false, "stat": "reb", "line": 3.5, "side": "Over", "proj": 4.2, "avg": 3.6, "g": 10, "last5": [2, 4, 2, 8, 1], "p_model": 55, "p_vegas": 49, "price": -109, "gkey": "LAL@ATL"}, {"name": "Daniss Jenkins", "team": "DET", "opp": "WAS", "home": true, "stat": "reb", "line": 2.5, "side": "Over", "proj": 3.2, "avg": 3.3, "g": 9, "last5": [2, 3, 1, 1, 5], "p_model": 58, "p_vegas": 54, "price": -135, "gkey": "WAS@DET"}]};
 const ESPN = {GSW:"GS",NYK:"NY",NOP:"NO",SAS:"SA",UTA:"UTAH",WAS:"WSH"};
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -315,8 +324,14 @@ function pickCard(g0) {
   const lead = g && g.started ? (g0.pick === g0.home ? g.hs - g.as : g.as - g.hs) : null;
   const cls = lead === null ? "wait" : g.final ? (lead > 0 ? "win" : "loss") : (lead > 0 ? "live" : "loss");
   const out = lead === null ? `${g0.p}% to win` : g.final ? (lead > 0 ? "Won" : "Lost") : (lead > 0 ? `Up ${lead}` : lead < 0 ? `Down ${-lead}` : "Tied");
-  const row = (t, sc, side) => `<div class="prow ${g0.pick === t ? "mine" : ""} ${g && g.started && sc < (side === "away" ? hs : as) ? "dim" : ""}">${teamImg(g, side)}<b>${t}</b><em>${sc}</em></div>`;
-  return `<article class="pick ${cls}">${row(g0.away, as, "away")}${row(g0.home, hs, "home")}<div class="pfoot"><span>${esc(s.txt)}</span><b>${out}</b></div></article>`;
+  const ml = t => t === g0.home ? g0.ml_home : g0.ml_away;
+  const vt = t => g0.vegas === t && ml(t) != null ? `<i class="vtag">VEGAS ${price(ml(t))}</i>` : "";
+  const row = (t, sc, side) => `<div class="prow ${g0.pick === t ? "mine" : ""} ${g && g.started && sc < (side === "away" ? hs : as) ? "dim" : ""}">${teamImg(g, side)}<b>${t}${vt(t)}</b><em>${sc}</em></div>`;
+  const split = g0.vegas && g0.vegas !== g0.pick;
+  const vres = !g || !g.started || !g0.vegas ? "" : g.final ? ((g0.vegas === g0.home ? g.hs > g.as : g.as > g.hs) ? " · Vegas won" : " · Vegas lost") : "";
+  const sp = g0.spread_home, fav = sp < 0 ? g0.home : g0.away;
+  const vline = `<div class="vline">Vegas line <b>${fav} ${sp === 0 ? "PK" : "-" + Math.abs(sp)}</b>${vres}</div>`;
+  return `<article class="pick ${cls}${split ? " split" : ""}">${split ? '<p class="splitnote">Model vs Vegas</p>' : ""}${row(g0.away, as, "away")}${row(g0.home, hs, "home")}${vline}<div class="pfoot"><span>${esc(s.txt)}</span><b>${out}</b></div></article>`;
 }
 
 function render() {
@@ -328,8 +343,11 @@ function render() {
   const sp = tally(BOARD.spots, r => { const g = LIVE.games[r.gkey]; const c = spotState(r, g, g && g.players[norm(r.name)]).cls; return c === "win" ? "win" : (c === "loss" && g && (g.final || r.side === "Under")) ? "loss" : "pend"; });
   const ln = tally(BOARD.games.filter(g => g.lean), g0 => { const g = LIVE.games[g0.key]; if (!g || !g.final) return "pend"; const c = ((g.hs - g.as) + g0.spread_home) * (g0.lean.team === g0.home ? 1 : -1); return c > 0 ? "win" : c < 0 ? "loss" : "pend"; });
   const pk = tally(BOARD.games, g0 => { const g = LIVE.games[g0.key]; if (!g || !g.final) return "pend"; return (g0.pick === g0.home ? g.hs > g.as : g.as > g.hs) ? "win" : "loss"; });
+  const vg = tally(BOARD.games.filter(g0 => g0.vegas), g0 => { const g = LIVE.games[g0.key]; if (!g || !g.final) return "pend"; return (g0.vegas === g0.home ? g.hs > g.as : g.as > g.hs) ? "win" : "loss"; });
   const box = (n, t) => `<div><small>${n}</small><b>${t.w}-${t.l}</b><em>${t.p ? t.p + " to go" : "all settled"}</em></div>`;
-  $("#tally").innerHTML = box("Spots", sp) + box("Leans", ln) + box("Picks", pk);
+  $("#tally").innerHTML = box("Spots", sp) + box("Leans", ln) + box("Model picks", pk) + box("Vegas picks", vg);
+  const S0 = BOARD.season, nSplit = BOARD.games.filter(g0 => g0.vegas && g0.vegas !== g0.pick).length;
+  if (S0 && S0.n) $("#season").innerHTML = `Season straight up: model <b>${S0.model}-${S0.n - S0.model}</b>, Vegas favorites <b>${S0.vegas}-${S0.n - S0.vegas}</b>. ${nSplit ? `Tonight they disagree on <b>${nSplit}</b> game${nSplit > 1 ? "s" : ""}.` : "Tonight they agree on every game."}`;
   const live = Object.values(LIVE.games).filter(g => g.started && !g.final).length, done = Object.values(LIVE.games).filter(g => g.final).length;
   $("#pill").classList.toggle("on", live > 0);
   $("#pilltxt").textContent = live ? `${live} live` : done && done === BOARD.games.length ? "Final" : "Pregame";
